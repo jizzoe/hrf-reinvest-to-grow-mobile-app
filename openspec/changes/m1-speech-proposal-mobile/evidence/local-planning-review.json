@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "skill": "base-code-review",
+  "status": "completed",
+  "mode": "autonomous",
+  "summary": "Bounded component planning review found no unresolved defect in the five-artifact speech proposal package against the approved central pin and mobile governance.",
+  "artifacts": [
+    { "kind": "file", "operation": "read", "subject": "openspec/changes/m1-speech-proposal-mobile/proposal.md" },
+    { "kind": "file", "operation": "read", "subject": "openspec/changes/m1-speech-proposal-mobile/specs/speech-proposal-mobile/spec.md" },
+    { "kind": "file", "operation": "read", "subject": "openspec/changes/m1-speech-proposal-mobile/specs/manual-offline-business-journal/spec.md" },
+    { "kind": "file", "operation": "read", "subject": "openspec/changes/m1-speech-proposal-mobile/design.md" },
+    { "kind": "file", "operation": "read", "subject": "openspec/changes/m1-speech-proposal-mobile/tasks.md" }
+  ],
+  "evidence": [
+    { "id": "review-component-plan", "type": "review", "subject": "bounded component planning artifacts", "result": "passed", "reference": "openspec/changes/m1-speech-proposal-mobile/" },
+    { "id": "central-pin-and-dispatch", "type": "record", "subject": "approved central contract and component authorization", "result": "passed", "reference": "central pin 48cb1ad511a3d578c347889e5c78e8a967c16dab; dispatch 6c7bf96472618300b93be4b8093f59a9b2611a4e" },
+    { "id": "strict-selected", "type": "validation", "subject": "selected component OpenSpec change", "result": "passed", "reference": "openspec validate m1-speech-proposal-mobile --strict --no-interactive" },
+    { "id": "strict-all", "type": "validation", "subject": "component OpenSpec items", "result": "passed", "reference": "openspec validate --all --strict --no-interactive: 2 passed, 0 failed" },
+    { "id": "patch-integrity", "type": "validation", "subject": "planning patch", "result": "passed", "reference": "git diff --check" }
+  ],
+  "assumptions": [
+    "The approved central dispatch is the narrower, newer product decision that authorizes this Phase 2 speech slice over the older Phase 1 no-speech boundary.",
+    "Physical Android TTS, enlarged-text, and installability evidence remains a central system-acceptance input behind the separate EAS gate."
+  ],
+  "openQuestions": [],
+  "nextAction": { "kind": "continue", "description": "Commit and push the validated component plan, advance the controller to Apply, then implement tasks in dependency-valid batches without crossing the EAS gate." },
+  "details": {
+    "reviewedScope": {
+      "targets": [
+        "openspec/changes/m1-speech-proposal-mobile/proposal.md",
+        "openspec/changes/m1-speech-proposal-mobile/specs/speech-proposal-mobile/spec.md",
+        "openspec/changes/m1-speech-proposal-mobile/specs/manual-offline-business-journal/spec.md",
+        "openspec/changes/m1-speech-proposal-mobile/design.md",
+        "openspec/changes/m1-speech-proposal-mobile/tasks.md"
+      ],
+      "contextPaths": [
+        "AGENTS.md",
+        "docs/sdd-workflow.md",
+        "docs/ai-assistant-governance.md",
+        "openspec/specs/manual-offline-business-journal/spec.md"
+      ],
+      "evidenceIds": ["review-component-plan", "central-pin-and-dispatch", "strict-selected", "strict-all", "patch-integrity"]
+    },
+    "findings": [],
+    "coverage": [
+      { "area": "scope, behavior, regression, edge cases, and task ordering", "status": "reviewed", "evidenceIds": ["review-component-plan", "central-pin-and-dispatch", "strict-selected"] },
+      { "area": "data integrity, confirmation, persistence, and recovery", "status": "reviewed", "evidenceIds": ["review-component-plan", "central-pin-and-dispatch"] },
+      { "area": "security, privacy, authorization, external state, and untrusted input", "status": "reviewed", "evidenceIds": ["review-component-plan", "central-pin-and-dispatch"] },
+      { "area": "dependencies, supply chain, attribution, and portability", "status": "reviewed", "evidenceIds": ["review-component-plan"] },
+      { "area": "native UI accessibility, layout, and interaction risk", "status": "reviewed", "evidenceIds": ["review-component-plan"] },
+      { "area": "runtime implementation", "status": "not-applicable", "evidenceIds": [] }
+    ],
+    "evidenceGaps": [],
+    "scopeSummary": "Reviewed exactly the component proposal, two delta specs, design, and task plan against the current central pin, mobile governance, accepted manual behavior, prototype profile, and retained EAS/device boundary."
+  }
+}
