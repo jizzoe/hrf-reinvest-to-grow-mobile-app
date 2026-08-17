@@ -16,10 +16,7 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": [
-      "expo-sqlite",
-      "expo-localization"
-    ],
+    "plugins": ["expo-sqlite", "expo-localization"],
     "extra": {
       "eas": {
         "projectId": "85d7d86a-ee85-4b82-85ef-8a6b7e26eb48"

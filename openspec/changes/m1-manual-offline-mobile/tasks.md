@@ -29,7 +29,8 @@
 
 ## 4. Android Build and Evidence Return
 
-- [ ] 4.1 Create/link the approved Expo EAS project, configure EAS-managed Android signing, and submit one internal-distribution Android APK build without paid-plan upgrade or external cloud integration.
+- [x] 4.1 Create/link the approved Expo EAS project, configure EAS-managed Android signing, and submit one internal-distribution Android APK build without paid-plan upgrade or external cloud integration.
+  - Evidence: EAS project `@joericearchitect/hrf-reinvest-to-grow` and EAS-managed keystore were created; Android internal-distribution build `f4cdb078-39c6-4110-9540-1b1630fc2973` finished successfully. Safe metadata, artifact-access handling, and the source-traceability gap are recorded in `docs/implementation-evidence/m1-manual-offline-mobile-eas-build.md`.
 - [ ] 4.2 Produce safe synthetic APK/install and device-run evidence, including offline sale/expense, restart persistence, local outbox identity, activity/totals, and English/French smoke coverage.
 - [ ] 4.3 Run component Verify against every approved requirement, scenario, task, and quality constraint; correct defects within the approved budget and record evidence.
 - [ ] 4.4 Present component verification for the separate Gate-2 approval; only after approval Sync, Archive, integrate to local/remote `main`, and return the required record to the central linkage ledger.
