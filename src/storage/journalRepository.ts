@@ -1,6 +1,10 @@
 import * as SQLite from 'expo-sqlite';
 
-import type { JournalTransaction, OutboxRecord } from '../domain/types';
+import type {
+  JournalTransaction,
+  OutboxRecord,
+  SpeechProposalValues,
+} from '../domain/types';
 
 export interface JournalRepository {
   initialize(): Promise<void>;
@@ -22,6 +26,10 @@ type TransactionRow = {
   operation_id: string;
   status: 'saved_local';
   type: 'sale' | 'expense';
+  source_fixture_id: 'synthetic-rice-sale-500' | null;
+  source_proposed_values: string | null;
+  source_raw_input: 'I sold rice for 500 gourdes today' | null;
+  source_type: 'speech_transcript' | null;
 };
 
 type OutboxRow = {
@@ -33,7 +41,30 @@ type OutboxRow = {
   transaction_id: string;
 };
 
-function mapTransaction(row: TransactionRow): JournalTransaction {
+export function sourceColumnMigrations(existingColumns: string[]): string[] {
+  const existing = new Set(existingColumns);
+  return [
+    [
+      'source_type',
+      'ALTER TABLE journal_transactions ADD COLUMN source_type TEXT',
+    ],
+    [
+      'source_fixture_id',
+      'ALTER TABLE journal_transactions ADD COLUMN source_fixture_id TEXT',
+    ],
+    [
+      'source_raw_input',
+      'ALTER TABLE journal_transactions ADD COLUMN source_raw_input TEXT',
+    ],
+    [
+      'source_proposed_values',
+      'ALTER TABLE journal_transactions ADD COLUMN source_proposed_values TEXT',
+    ],
+  ].flatMap(([column, statement]) => (existing.has(column) ? [] : [statement]));
+}
+
+export function mapTransaction(row: TransactionRow): JournalTransaction {
+  const sourceContext = parseSpeechSourceContext(row);
   return {
     amountCents: row.amount_cents,
     category: row.category,
@@ -47,7 +78,49 @@ function mapTransaction(row: TransactionRow): JournalTransaction {
     operationId: row.operation_id,
     status: row.status,
     type: row.type,
+    ...(sourceContext ? { sourceContext } : {}),
   };
+}
+
+function parseSpeechSourceContext(
+  row: TransactionRow,
+): JournalTransaction['sourceContext'] {
+  if (
+    row.source_type !== 'speech_transcript' ||
+    row.source_fixture_id !== 'synthetic-rice-sale-500' ||
+    row.source_raw_input !== 'I sold rice for 500 gourdes today' ||
+    !row.source_proposed_values
+  ) {
+    return undefined;
+  }
+  try {
+    const proposed: unknown = JSON.parse(row.source_proposed_values);
+    if (!isSpeechProposalValues(proposed)) {
+      return undefined;
+    }
+    return {
+      fixtureId: row.source_fixture_id,
+      originalProposal: proposed,
+      rawInput: row.source_raw_input,
+      sourceType: row.source_type,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function isSpeechProposalValues(value: unknown): value is SpeechProposalValues {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const proposal = value as Partial<SpeechProposalValues>;
+  return (
+    proposal.type === 'sale' &&
+    typeof proposal.amount === 'string' &&
+    typeof proposal.date === 'string' &&
+    typeof proposal.category === 'string' &&
+    typeof proposal.note === 'string'
+  );
 }
 
 function mapOutbox(row: OutboxRow): OutboxRecord {
@@ -97,6 +170,14 @@ export class SQLiteJournalRepository implements JournalRepository {
         created_at TEXT NOT NULL
       );
     `);
+    const columns = await this.database.getAllAsync<{ name: string }>(
+      'PRAGMA table_info(journal_transactions)',
+    );
+    for (const migration of sourceColumnMigrations(
+      columns.map((column) => column.name),
+    )) {
+      await this.database.execAsync(migration);
+    }
   }
 
   async listTransactions(): Promise<JournalTransaction[]> {
@@ -112,8 +193,8 @@ export class SQLiteJournalRepository implements JournalRepository {
     await this.database.withExclusiveTransactionAsync(async (tx) => {
       await tx.runAsync(
         `INSERT OR IGNORE INTO journal_transactions
-          (id, client_idempotency_key, operation_id, type, amount_cents, date, category, note, currency, confirmation_state, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id, client_idempotency_key, operation_id, type, amount_cents, date, category, note, currency, confirmation_state, status, created_at, source_type, source_fixture_id, source_raw_input, source_proposed_values)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           transaction.id,
           transaction.clientIdempotencyKey,
@@ -127,6 +208,12 @@ export class SQLiteJournalRepository implements JournalRepository {
           transaction.confirmationState,
           transaction.status,
           transaction.createdAt,
+          transaction.sourceContext?.sourceType ?? null,
+          transaction.sourceContext?.fixtureId ?? null,
+          transaction.sourceContext?.rawInput ?? null,
+          transaction.sourceContext
+            ? JSON.stringify(transaction.sourceContext.originalProposal)
+            : null,
         ],
       );
       await tx.runAsync(

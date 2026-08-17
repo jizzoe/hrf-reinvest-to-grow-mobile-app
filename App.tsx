@@ -19,6 +19,7 @@ import {
   initialDraft,
   makeConfirmedTransaction,
   resolveLocale,
+  reviewSummary,
   text,
   validateDraft,
 } from './src/domain/journal';
@@ -29,12 +30,26 @@ import type {
   TransactionType,
 } from './src/domain/types';
 import { SQLiteJournalRepository } from './src/storage/journalRepository';
+import {
+  DeterministicSpeechProposalAdapter,
+  type SpeechProposalAdapter,
+} from './src/speech/speechProposal';
+import { deviceTtsAdapter, type TtsAdapter } from './src/speech/tts';
 
-type Screen = 'entry' | 'home' | 'review';
+type Screen = 'entry' | 'home' | 'review' | 'speech-failure' | 'speech-start';
+type TtsStatus = 'done' | 'error' | 'idle' | 'speaking';
+
+type AppProps = {
+  speechAdapter?: SpeechProposalAdapter;
+  ttsAdapter?: TtsAdapter;
+};
 
 const businessName = 'Ti Komès Lakay';
 
-export default function App() {
+export function AppView({
+  speechAdapter = new DeterministicSpeechProposalAdapter(),
+  ttsAdapter = deviceTtsAdapter,
+}: AppProps = {}) {
   const [locale, setLocale] = useState<AppLocale>(() =>
     resolveLocale(getLocales()[0]?.languageCode),
   );
@@ -48,6 +63,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [ttsStatus, setTtsStatus] = useState<TtsStatus>('idle');
 
   useEffect(() => {
     let active = true;
@@ -74,7 +90,20 @@ export default function App() {
     };
   }, [locale]);
 
+  useEffect(
+    () => () => {
+      ttsAdapter.stop();
+    },
+    [ttsAdapter],
+  );
+
   const totals = useMemo(() => calculateTotals(records), [records]);
+
+  const changeLocale = (nextLocale: AppLocale) => {
+    ttsAdapter.stop();
+    setTtsStatus('idle');
+    setLocale(nextLocale);
+  };
 
   const updateDraft = <Key extends keyof JournalDraft>(
     key: Key,
@@ -84,10 +113,52 @@ export default function App() {
   };
 
   const startEntry = (type: TransactionType) => {
+    ttsAdapter.stop();
+    setTtsStatus('idle');
     setDraft(initialDraft(type));
     setErrors([]);
     setSaveError(null);
     setScreen('entry');
+  };
+
+  const startSpeech = () => {
+    ttsAdapter.stop();
+    setTtsStatus('idle');
+    setDraft(initialDraft('sale'));
+    setErrors([]);
+    setSaveError(null);
+    setScreen('speech-start');
+  };
+
+  const runSpeechSample = (result: 'success' | 'unavailable') => {
+    ttsAdapter.stop();
+    setTtsStatus('idle');
+    const proposal = speechAdapter.createSample(
+      new Date().toISOString().slice(0, 10),
+      result,
+    );
+    if (proposal.status === 'unavailable') {
+      setScreen('speech-failure');
+      return;
+    }
+    setDraft(proposal.draft);
+    setErrors([]);
+    setScreen('review');
+  };
+
+  const leaveSpeechReview = (nextScreen: Screen) => {
+    ttsAdapter.stop();
+    setTtsStatus('idle');
+    setScreen(nextScreen);
+  };
+
+  const readDraftAloud = () => {
+    ttsAdapter.stop();
+    ttsAdapter.speak(reviewSummary(draft, locale), locale, {
+      onDone: () => setTtsStatus('done'),
+      onError: () => setTtsStatus('error'),
+      onStart: () => setTtsStatus('speaking'),
+    });
   };
 
   const reviewDraft = () => {
@@ -104,6 +175,8 @@ export default function App() {
       return;
     }
     setIsSaving(true);
+    ttsAdapter.stop();
+    setTtsStatus('idle');
     setSaveError(null);
     try {
       const transaction = makeConfirmedTransaction(
@@ -137,20 +210,37 @@ export default function App() {
         ) : screen === 'home' ? (
           <HomeScreen
             locale={locale}
-            onLocaleChange={setLocale}
+            onLocaleChange={changeLocale}
             onStartEntry={startEntry}
+            onStartSpeech={startSpeech}
             records={records}
             saveError={saveError}
             totals={totals}
+          />
+        ) : screen === 'speech-start' ? (
+          <SpeechStartScreen
+            locale={locale}
+            onBack={() => leaveSpeechReview('home')}
+            onLocaleChange={changeLocale}
+            onManual={() => startEntry('sale')}
+            onRunSample={runSpeechSample}
+          />
+        ) : screen === 'speech-failure' ? (
+          <SpeechFailureScreen
+            locale={locale}
+            onBack={startSpeech}
+            onLocaleChange={changeLocale}
+            onManual={() => startEntry('sale')}
+            onRetry={() => runSpeechSample('success')}
           />
         ) : screen === 'entry' ? (
           <EntryScreen
             draft={draft}
             errors={errors}
             locale={locale}
-            onBack={() => setScreen('home')}
+            onBack={() => setScreen(draft.sourceContext ? 'review' : 'home')}
             onChange={updateDraft}
-            onLocaleChange={setLocale}
+            onLocaleChange={changeLocale}
             onReview={reviewDraft}
             saveError={saveError}
           />
@@ -159,11 +249,14 @@ export default function App() {
             draft={draft}
             isSaving={isSaving}
             locale={locale}
-            onBack={() => setScreen('entry')}
-            onCancel={() => setScreen('home')}
+            onBack={() => leaveSpeechReview('entry')}
+            onCancel={() => leaveSpeechReview('home')}
             onConfirm={() => void confirmDraft()}
-            onLocaleChange={setLocale}
+            onLocaleChange={changeLocale}
+            onReadAloud={readDraftAloud}
+            onRecordAgain={() => leaveSpeechReview('speech-start')}
             saveError={saveError}
+            ttsStatus={ttsStatus}
           />
         )}
       </ScrollView>
@@ -171,10 +264,15 @@ export default function App() {
   );
 }
 
+export default function App() {
+  return <AppView />;
+}
+
 function HomeScreen({
   locale,
   onLocaleChange,
   onStartEntry,
+  onStartSpeech,
   records,
   saveError,
   totals,
@@ -182,6 +280,7 @@ function HomeScreen({
   locale: AppLocale;
   onLocaleChange: (locale: AppLocale) => void;
   onStartEntry: (type: TransactionType) => void;
+  onStartSpeech: () => void;
   records: JournalTransaction[];
   saveError: string | null;
   totals: ReturnType<typeof calculateTotals>;
@@ -229,6 +328,10 @@ function HomeScreen({
           onPress={() => onStartEntry('expense')}
         />
       </View>
+      <SecondaryButton
+        label={text(locale, 'useSpeech')}
+        onPress={onStartSpeech}
+      />
 
       <View style={styles.activitySection}>
         <Text style={styles.sectionHeading}>{text(locale, 'activity')}</Text>
@@ -250,6 +353,91 @@ function HomeScreen({
         )}
       </View>
       <Text style={styles.disclaimer}>{text(locale, 'localEstimate')}</Text>
+    </>
+  );
+}
+
+function SpeechStartScreen({
+  locale,
+  onBack,
+  onLocaleChange,
+  onManual,
+  onRunSample,
+}: {
+  locale: AppLocale;
+  onBack: () => void;
+  onLocaleChange: (locale: AppLocale) => void;
+  onManual: () => void;
+  onRunSample: (result: 'success' | 'unavailable') => void;
+}) {
+  return (
+    <>
+      <BrandHeader
+        locale={locale}
+        onBack={onBack}
+        onLocaleChange={onLocaleChange}
+      />
+      <View style={styles.speechPanel} testID="speech-start-state">
+        <Text style={styles.screenHeading}>
+          {text(locale, 'sampleHeading')}
+        </Text>
+        <Text style={styles.disclosureText}>
+          {text(locale, 'sampleDisclosure')}
+        </Text>
+        <Text style={styles.formLabel}>{text(locale, 'sampleMessage')}</Text>
+        <Text style={styles.transcriptText}>
+          I sold rice for 500 gourdes today
+        </Text>
+      </View>
+      <PrimaryButton
+        label={text(locale, 'useSample')}
+        onPress={() => onRunSample('success')}
+      />
+      <SecondaryButton
+        label={text(locale, 'showUnavailable')}
+        onPress={() => onRunSample('unavailable')}
+      />
+      <SecondaryButton
+        label={text(locale, 'enterSaleYourself')}
+        onPress={onManual}
+      />
+    </>
+  );
+}
+
+function SpeechFailureScreen({
+  locale,
+  onBack,
+  onLocaleChange,
+  onManual,
+  onRetry,
+}: {
+  locale: AppLocale;
+  onBack: () => void;
+  onLocaleChange: (locale: AppLocale) => void;
+  onManual: () => void;
+  onRetry: () => void;
+}) {
+  return (
+    <>
+      <BrandHeader
+        locale={locale}
+        onBack={onBack}
+        onLocaleChange={onLocaleChange}
+      />
+      <View style={styles.speechPanel} testID="speech-failure-state">
+        <Text style={styles.screenHeading}>
+          {text(locale, 'sampleFailure')}
+        </Text>
+        <Text style={styles.screenPrompt}>
+          {text(locale, 'sampleFailureHelp')}
+        </Text>
+      </View>
+      <PrimaryButton label={text(locale, 'tryAgain')} onPress={onRetry} />
+      <SecondaryButton
+        label={text(locale, 'enterSaleYourself')}
+        onPress={onManual}
+      />
     </>
   );
 }
@@ -362,7 +550,10 @@ function ReviewScreen({
   onCancel,
   onConfirm,
   onLocaleChange,
+  onReadAloud,
+  onRecordAgain,
   saveError,
+  ttsStatus,
 }: {
   draft: JournalDraft;
   isSaving: boolean;
@@ -371,14 +562,18 @@ function ReviewScreen({
   onCancel: () => void;
   onConfirm: () => void;
   onLocaleChange: (locale: AppLocale) => void;
+  onReadAloud: () => void;
+  onRecordAgain: () => void;
   saveError: string | null;
+  ttsStatus: TtsStatus;
 }) {
   const isSale = draft.type === 'sale';
   const amount = formatHtg(
     Number(draft.amount.replace(',', '.')) * 100,
     locale,
   );
-  const typeKey = isSale ? 'sale' : 'expense';
+  const summary = reviewSummary(draft, locale);
+  const fromSpeech = Boolean(draft.sourceContext);
 
   return (
     <>
@@ -391,12 +586,21 @@ function ReviewScreen({
         {text(locale, isSale ? 'reviewSale' : 'reviewExpense')}
       </Text>
       <Text style={styles.screenPrompt}>{text(locale, 'reviewPrompt')}</Text>
-      <Text style={styles.sourceLabel}>◉ {text(locale, 'enteredByYou')}</Text>
-      <Text style={styles.reviewSentence}>
-        {text(locale, 'recordThis')}{' '}
-        {typeKey === 'sale' ? text(locale, 'sale') : text(locale, 'expense')}{' '}
-        {text(locale, 'of')} {amount} {text(locale, 'for')} {draft.category}?
+      <Text style={styles.sourceLabel}>
+        ◉ {text(locale, fromSpeech ? 'speechSource' : 'enteredByYou')}
       </Text>
+      {draft.sourceContext ? (
+        <View style={styles.transcriptPanel} testID="speech-review-source">
+          <Text style={styles.formLabel}>{text(locale, 'sampleMessage')}</Text>
+          <Text style={styles.transcriptText}>
+            {draft.sourceContext.rawInput}
+          </Text>
+          <Text style={styles.disclosureText}>
+            {text(locale, 'sampleDisclosure')}
+          </Text>
+        </View>
+      ) : null}
+      <Text style={styles.reviewSentence}>{summary}</Text>
 
       <ReviewRow
         label={text(locale, 'amount')}
@@ -426,6 +630,30 @@ function ReviewScreen({
       ) : null}
 
       {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+      {fromSpeech ? (
+        <>
+          <SecondaryButton
+            label={text(locale, 'readAloud')}
+            onPress={onReadAloud}
+          />
+          {ttsStatus !== 'idle' ? (
+            <Text accessibilityLiveRegion="polite" style={styles.ttsStatus}>
+              {text(
+                locale,
+                ttsStatus === 'error'
+                  ? 'speechError'
+                  : ttsStatus === 'done'
+                    ? 'speechDone'
+                    : 'speechSpeaking',
+              )}
+            </Text>
+          ) : null}
+          <SecondaryButton
+            label={text(locale, 'recordAgain')}
+            onPress={onRecordAgain}
+          />
+        </>
+      ) : null}
       <Text style={styles.actionHint}>{text(locale, 'savedOnPhone')}</Text>
       <Pressable
         accessibilityLabel={text(locale, 'cancel')}
@@ -467,6 +695,7 @@ function BrandHeader({
           style={styles.backButton}
         >
           <Text style={styles.backText}>‹</Text>
+          <Text style={styles.backLabel}>{text(locale, 'back')}</Text>
         </Pressable>
       ) : null}
       <Image
@@ -663,6 +892,25 @@ function PrimaryButton({
   );
 }
 
+function SecondaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.secondaryButton}
+    >
+      <Text style={styles.secondaryButtonText}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const colors = {
   coral: '#C83E35',
   divider: '#D9DDD8',
@@ -716,7 +964,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   amountRow: { alignItems: 'center', flexDirection: 'row', marginTop: 36 },
-  backButton: { marginRight: 8, padding: 4 },
+  backButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginRight: 8,
+    padding: 4,
+  },
+  backLabel: { color: colors.navy, fontSize: 16, fontWeight: '800' },
   backText: {
     color: colors.navy,
     fontSize: 52,
@@ -751,6 +1005,14 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     marginTop: 28,
     textAlign: 'center',
+  },
+  disclosureText: {
+    color: colors.coral,
+    fontSize: 17,
+    fontWeight: '800',
+    lineHeight: 25,
+    marginBottom: 24,
+    marginTop: 18,
   },
   editButton: {
     borderColor: colors.green,
@@ -925,6 +1187,21 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     marginTop: 14,
   },
+  secondaryButton: {
+    alignItems: 'center',
+    borderColor: colors.green,
+    borderRadius: 8,
+    borderWidth: 2,
+    marginTop: 12,
+    minHeight: 54,
+    paddingVertical: 14,
+  },
+  secondaryButtonText: {
+    color: colors.green,
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
   sectionHeading: {
     color: colors.text,
     fontSize: 29,
@@ -938,11 +1215,31 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginTop: 26,
   },
+  speechPanel: { marginBottom: 12 },
   spentIcon: { backgroundColor: '#FBE7E4' },
   spentValue: {
     color: colors.coral,
     fontSize: 19,
     fontWeight: '800',
     textAlign: 'right',
+  },
+  transcriptPanel: {
+    backgroundColor: '#F3F7F1',
+    borderRadius: 8,
+    marginTop: 18,
+    padding: 16,
+  },
+  transcriptText: {
+    color: colors.navy,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 29,
+  },
+  ttsStatus: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 12,
+    textAlign: 'center',
   },
 });

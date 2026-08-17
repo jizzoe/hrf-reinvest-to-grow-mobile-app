@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { initialDraft, makeConfirmedTransaction } from '../domain/journal';
+import { DeterministicSpeechProposalAdapter } from '../speech/speechProposal';
 import {
   createMemoryJournalStorage,
   MemoryJournalRepository,
@@ -36,6 +37,33 @@ describe('local outbox persistence model', () => {
       operationId: 'create-transaction-expense-restart-001',
       state: 'queued',
       transactionId: 'expense-restart-001',
+    });
+  });
+
+  it('preserves speech source context with one transaction and outbox across restart', async () => {
+    const storage = createMemoryJournalStorage();
+    const proposal = new DeterministicSpeechProposalAdapter().createSample(
+      '2026-08-17',
+    );
+    if (proposal.status !== 'proposal') {
+      throw new Error('Expected deterministic proposal.');
+    }
+    const transaction = makeConfirmedTransaction(
+      proposal.draft,
+      () => 'speech-restart-001',
+      '2026-08-17T14:00:00.000Z',
+    );
+    const repository = new MemoryJournalRepository(storage);
+    await repository.saveConfirmedTransaction(transaction);
+    await repository.saveConfirmedTransaction(transaction);
+
+    const restarted = new MemoryJournalRepository(storage);
+    expect(await restarted.listTransactions()).toEqual([transaction]);
+    expect(
+      await restarted.getOutboxForTransaction('speech-restart-001'),
+    ).toMatchObject({
+      clientIdempotencyKey: 'client-speech-restart-001',
+      transactionId: 'speech-restart-001',
     });
   });
 });

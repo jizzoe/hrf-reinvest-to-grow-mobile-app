@@ -20,6 +20,7 @@ export const copy = {
     date: 'Date',
     edit: 'Edit',
     enteredByYou: 'Entered by you',
+    enterSaleYourself: 'Enter sale yourself',
     emptyActivity: 'No local records yet.',
     estimatedProfit: 'Estimated local profit',
     expense: 'Expense',
@@ -37,6 +38,7 @@ export const copy = {
     noteExample: 'Example: market sales',
     of: 'of',
     recordExpense: 'Record expense',
+    recordAgain: 'Record again',
     recordSale: 'Record sale',
     recordThis: 'Record this',
     review: 'Review entry',
@@ -45,6 +47,20 @@ export const copy = {
     reviewHint: 'You will review before this is saved.',
     reviewPrompt: 'Check the details before you save.',
     reviewSale: 'Review sale',
+    readAloud: 'Read summary aloud',
+    sampleDisclosure:
+      'Prototype sample: this does not record or transcribe you.',
+    sampleFailure: 'The prototype sample is unavailable.',
+    sampleFailureHelp:
+      'Try the sample again or enter the sale yourself. Your saved records are unchanged.',
+    sampleHeading: 'Try the speech proposal sample',
+    sampleMessage: 'Sample message',
+    showUnavailable: 'Show unavailable example',
+    speechDone: 'Read-aloud complete.',
+    speechError:
+      'Read-aloud is unavailable. You can still review and confirm on screen.',
+    speechSource: 'Suggested from speech',
+    speechSpeaking: 'Reading the visible summary aloud.',
     sale: 'Sale',
     saleExample: 'For example: rice',
     salePrompt: 'What did you earn today?',
@@ -54,6 +70,9 @@ export const copy = {
     saving: 'Saving locally…',
     thisWeek: 'This week',
     title: 'Reinvest to Grow',
+    tryAgain: 'Try sample again',
+    useSample: 'Use prototype sample',
+    useSpeech: 'Use speech',
     validationAmount: 'Enter an amount greater than zero.',
     validationCategory: 'Enter a category or purpose.',
     validationDate: 'Enter a date as YYYY-MM-DD.',
@@ -75,6 +94,7 @@ export const copy = {
     date: 'Date',
     edit: 'Modifier',
     enteredByYou: 'Saisi par vous',
+    enterSaleYourself: 'Saisir la vente vous-même',
     emptyActivity: 'Aucun enregistrement local pour le moment.',
     estimatedProfit: 'Bénéfice local estimé',
     expense: 'Dépense',
@@ -93,6 +113,7 @@ export const copy = {
     noteExample: 'Exemple : ventes du marché',
     of: 'de',
     recordExpense: 'Enregistrer une dépense',
+    recordAgain: 'Enregistrer de nouveau',
     recordSale: 'Enregistrer une vente',
     recordThis: 'Enregistrer cette',
     review: 'Vérifier la saisie',
@@ -101,6 +122,20 @@ export const copy = {
     reviewHint: 'Vous vérifierez avant l’enregistrement.',
     reviewPrompt: 'Vérifiez les détails avant d’enregistrer.',
     reviewSale: 'Vérifier la vente',
+    readAloud: 'Lire le résumé à voix haute',
+    sampleDisclosure:
+      'Exemple de prototype : ceci ne vous enregistre pas et ne vous transcrit pas.',
+    sampleFailure: 'L’exemple du prototype est indisponible.',
+    sampleFailureHelp:
+      'Réessayez l’exemple ou saisissez la vente vous-même. Vos données enregistrées restent inchangées.',
+    sampleHeading: 'Essayer l’exemple de proposition vocale',
+    sampleMessage: 'Message d’exemple',
+    showUnavailable: 'Afficher l’exemple indisponible',
+    speechDone: 'Lecture à voix haute terminée.',
+    speechError:
+      'La lecture à voix haute est indisponible. Vous pouvez toujours vérifier et confirmer à l’écran.',
+    speechSource: 'Suggéré à partir de la parole',
+    speechSpeaking: 'Lecture du résumé visible à voix haute.',
     sale: 'Vente',
     saleExample: 'Par exemple : riz',
     salePrompt: 'Qu’avez-vous gagné aujourd’hui ?',
@@ -110,6 +145,9 @@ export const copy = {
     saving: 'Enregistrement local…',
     thisWeek: 'Cette semaine',
     title: 'Reinvest to Grow',
+    tryAgain: 'Réessayer l’exemple',
+    useSample: 'Utiliser l’exemple du prototype',
+    useSpeech: 'Utiliser la parole',
     validationAmount: 'Saisissez un montant supérieur à zéro.',
     validationCategory: 'Saisissez une catégorie ou un objectif.',
     validationDate: 'Saisissez une date au format AAAA-MM-JJ.',
@@ -136,6 +174,15 @@ export function formatHtg(amountCents: number, locale: AppLocale): string {
     currencyDisplay: 'code',
     style: 'currency',
   }).format(amountCents / 100);
+}
+
+export function reviewSummary(draft: JournalDraft, locale: AppLocale): string {
+  const amount = formatHtg(
+    Number(draft.amount.replace(',', '.')) * 100,
+    locale,
+  );
+  const type = text(locale, draft.type === 'sale' ? 'sale' : 'expense');
+  return `${text(locale, 'recordThis')} ${type} ${text(locale, 'of')} ${amount} ${text(locale, 'for')} ${draft.category}?`;
 }
 
 export function parseAmountToCents(value: string): number | null {
@@ -222,5 +269,13 @@ export function makeConfirmedTransaction(
     operationId: `create-transaction-${id}`,
     status: 'saved_local',
     type: draft.type,
+    ...(draft.sourceContext
+      ? {
+          sourceContext: {
+            ...draft.sourceContext,
+            originalProposal: { ...draft.sourceContext.originalProposal },
+          },
+        }
+      : {}),
   };
 }
