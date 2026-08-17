@@ -4,6 +4,7 @@ import { getLocales } from 'expo-localization';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -468,11 +469,12 @@ function BrandHeader({
           <Text style={styles.backText}>‹</Text>
         </Pressable>
       ) : null}
-      <View style={styles.wordmark}>
-        <Text style={styles.wordmarkHome}>HOME</Text>
-        <Text style={styles.wordmarkRoots}>ROOTS</Text>
-        <Text style={styles.wordmarkFoundation}>FOUNDATION</Text>
-      </View>
+      <Image
+        accessibilityLabel="Home Roots Foundation"
+        resizeMode="contain"
+        source={require('./assets/brand/home-roots-foundation-logo-temporary.png')}
+        style={styles.brandLogo}
+      />
       <View style={styles.headerRight}>
         <Text style={styles.savedStatus}>✓ {text(locale, 'savedOnPhone')}</Text>
         <View style={styles.localeRow}>
@@ -726,6 +728,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  brandLogo: { height: 78, width: 142 },
   businessName: {
     color: colors.text,
     fontSize: 24,
@@ -941,31 +944,5 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: '800',
     textAlign: 'right',
-  },
-  wordmark: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    maxWidth: 148,
-  },
-  wordmarkFoundation: {
-    color: '#52616b',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    width: '100%',
-  },
-  wordmarkHome: {
-    color: '#C71924',
-    fontSize: 19,
-    fontWeight: '900',
-    letterSpacing: -0.6,
-  },
-  wordmarkRoots: {
-    color: colors.green,
-    fontSize: 19,
-    fontWeight: '900',
-    letterSpacing: -0.6,
-    marginLeft: 3,
   },
 });

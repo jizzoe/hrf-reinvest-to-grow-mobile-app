@@ -53,10 +53,12 @@ large outlined action controls. Phase 1 shows only functional `Record sale` and
 shown as dead ends. The route is `Home -> entry -> review -> confirm -> updated
 Home`.
 
-The source repository does not include the original Home Roots Foundation logo
-asset. Until the owner supplies it, implementation uses a code-built text
-wordmark; it must not crop or extract the generated logo treatment from the
-reference PNG.
+The owner approved a temporary Home Roots Foundation brand asset for this
+prototype on 2026-08-17. The implementation uses the official site-header PNG
+at `assets/brand/home-roots-foundation-logo-temporary.png`, documented in
+[`docs/brand-assets.md`](../../../docs/brand-assets.md). It is an approved
+temporary substitute until a dedicated Reinvest-to-Grow logo is provided; it
+is not cropped from the generated reference PNG.
 
 ### Proportional deterministic checks before device evidence
 
