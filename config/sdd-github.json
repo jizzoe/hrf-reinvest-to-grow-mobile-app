@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "repository": {
+    "owner": "jizzoe",
+    "name": "hrf-reinvest-to-grow-mobile-app",
+    "defaultBranch": "main"
+  },
+  "project": {
+    "owner": "jizzoe",
+    "ownerType": "user",
+    "number": 2,
+    "title": "hrf-invest-in-growth",
+    "url": "https://github.com/users/jizzoe/projects/2"
+  },
+  "statusField": {
+    "name": "Status",
+    "options": ["Todo", "In Progress", "In Review", "Done"]
+  },
+  "managedLabels": [
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "bug",
+      "description": "Something is not working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "sdd",
+      "description": "Work item participates in the OpenSpec SDD lifecycle",
+      "color": "5319E7"
+    }
+  ],
+  "managedIssueBlockMarkers": {
+    "start": "<!-- sdd-managed:start -->",
+    "end": "<!-- sdd-managed:end -->"
+  }
+}
