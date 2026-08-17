@@ -2,7 +2,8 @@
 
 - [x] 1.1 Record a current component planning review and the central Gate 1 authorization, covering pin `48cb1ad511a3d578c347889e5c78e8a967c16dab`, proposal/spec/design/tasks, repository scope, `prototype-rapid` profile, synthetic/no-provider boundary, dependency decision, validation, recovery, and the separate EAS gate.
   - Evidence: `evidence/planning-review.md` and schema-valid `evidence/local-planning-review.json` cover the complete component plan, the newer approved central pin, the slice-level Gate 1 authorization, and the retained EAS boundary with no unresolved planning finding.
-- [ ] 1.2 Run the component OpenSpec planning validation contract, commit and push the approved plan on `feat/m1-speech-proposal-confirmation`, and record exact plan revision and controller recovery evidence before application edits.
+- [x] 1.2 Run the component OpenSpec planning validation contract, commit and push the approved plan on `feat/m1-speech-proposal-confirmation`, and record exact plan revision and controller recovery evidence before application edits.
+  - Evidence: pushed plan revision `269f13e79e39b49377017e6ba75fce20cce7320b`; selected and all strict OpenSpec validation passed with 2 items and 0 failures, review-result schema validation and `git diff --check` passed, and controller run `764fe2e9-72e2-4674-8081-96c6b56a3e0c` retains registered worktree/branch recovery records.
 
 ## 2. Proposal, Source, And Persistence
 
