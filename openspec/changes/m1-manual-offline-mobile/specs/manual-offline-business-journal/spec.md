@@ -16,6 +16,27 @@ The application SHALL install as `org.homerootsfoundation.reinvesttogrow` and SH
 - **WHEN** French is selected for the application
 - **THEN** the manual-entry, confirmation, activity, totals, and status copy is displayed from French resources without exposing untranslated technical status codes
 
+### Requirement: Manual Phase-1 flow begins on the approved Business Journal Home
+The application SHALL start on a synthetic Home view before manual entry. It
+SHALL present the business context, `This week` local totals, an understandable
+saved-local status, a recent-activity or empty state, and clearly labeled
+`Record sale` and `Record expense` actions. It SHALL use the selected M1 visual
+reference's calm near-white, deep-navy, green, and coral hierarchy without
+claiming live synchronization. Speech and receipt actions SHALL NOT appear as
+functional or dead-end controls in this Phase-1 component.
+
+#### Scenario: First use starts on Home
+- **WHEN** the application opens without confirmed records
+- **THEN** the user sees the synthetic Business Journal Home, zero HTG local
+  totals, usable Record sale and Record expense actions, and a plain-language
+  empty activity state rather than a pre-opened entry form
+
+#### Scenario: Saving returns to updated Home
+- **WHEN** a user confirms a valid synthetic sale or expense
+- **THEN** the application returns to Home, shows the updated signed activity
+  item and local totals, and labels the saved record as local without claiming
+  a remote send
+
 ### Requirement: Users confirm manual sales and expenses while offline
 The application SHALL let a user enter a sale or expense with type, amount, date, category or purpose, and optional note, then review and explicitly confirm it while no network connection is available. It SHALL create no confirmed record before confirmation.
 

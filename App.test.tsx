@@ -21,24 +21,37 @@ jest.mock('expo-localization', () => ({
 
 import App from './App';
 
-describe('manual entry screen', () => {
-  it('requires review before saving a synthetic sale', async () => {
+describe('Home-first manual entry flow', () => {
+  it('opens Home before a synthetic sale can be reviewed', async () => {
     const rendered = await render(<App />);
     const user = userEvent.setup();
 
-    const reviewButton = await rendered.findByRole('button', {
-      name: 'Review entry',
+    expect(await rendered.findByText('Good morning')).toBeTruthy();
+    const recordSale = rendered.getByRole('button', {
+      name: 'Record sale',
     });
+    await user.press(recordSale);
+
     await user.type(rendered.getByLabelText('Amount'), '150');
     await user.type(
       rendered.getByLabelText('Category or purpose'),
       'Synthetic market sale',
     );
+    const reviewButton = rendered.getByRole('button', {
+      name: 'Review sale',
+    });
     await user.press(reviewButton);
 
     await waitFor(() =>
-      expect(rendered.getByText('Review before saving')).toBeTruthy(),
+      expect(
+        rendered.getByText('Check the details before you save.'),
+      ).toBeTruthy(),
     );
-    expect(rendered.getByText('Waiting to sync')).toBeTruthy();
+    expect(rendered.getByText('Saved on this phone')).toBeTruthy();
+
+    await user.press(rendered.getByRole('button', { name: 'Confirm sale' }));
+    await waitFor(() =>
+      expect(rendered.getByText('What happened today?')).toBeTruthy(),
+    );
   });
 });

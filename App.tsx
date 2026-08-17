@@ -29,7 +29,7 @@ import type {
 } from './src/domain/types';
 import { SQLiteJournalRepository } from './src/storage/journalRepository';
 
-type Screen = 'entry' | 'review';
+type Screen = 'entry' | 'home' | 'review';
 
 const businessName = 'Ti Komès Lakay';
 
@@ -42,7 +42,7 @@ export default function App() {
   const [repository, setRepository] = useState<SQLiteJournalRepository | null>(
     null,
   );
-  const [screen, setScreen] = useState<Screen>('entry');
+  const [screen, setScreen] = useState<Screen>('home');
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,8 +82,11 @@ export default function App() {
     setDraft((current) => ({ ...current, [key]: value }));
   };
 
-  const chooseType = (type: TransactionType) => {
-    setDraft((current) => ({ ...current, type }));
+  const startEntry = (type: TransactionType) => {
+    setDraft(initialDraft(type));
+    setErrors([]);
+    setSaveError(null);
+    setScreen('entry');
   };
 
   const reviewDraft = () => {
@@ -111,16 +114,13 @@ export default function App() {
       setRecords(await repository.listTransactions());
       setDraft(initialDraft(draft.type));
       setErrors([]);
-      setScreen('entry');
+      setScreen('home');
     } catch {
       setSaveError(text(locale, 'saveError'));
     } finally {
       setIsSaving(false);
     }
   };
-
-  const typeLabel = (type: TransactionType) =>
-    text(locale, type === 'sale' ? 'sale' : 'expense');
 
   return (
     <View style={styles.safeArea}>
@@ -129,229 +129,512 @@ export default function App() {
         contentContainerStyle={styles.page}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>{text(locale, 'title')}</Text>
-          <Text style={styles.subtitle}>{text(locale, 'appSubtitle')}</Text>
-          <Text style={styles.business}>{businessName} · HTG</Text>
-          <View style={styles.localeRow}>
-            {(['en', 'fr'] as AppLocale[]).map((candidate) => (
-              <Pressable
-                key={candidate}
-                accessibilityRole="button"
-                onPress={() => setLocale(candidate)}
-                style={[
-                  styles.localeButton,
-                  locale === candidate && styles.localeButtonSelected,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.localeText,
-                    locale === candidate && styles.localeTextSelected,
-                  ]}
-                >
-                  {candidate === 'en' ? 'English' : 'Français'}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.summaryGrid}>
-          <SummaryCard
-            label={text(locale, 'moneyEarned')}
-            value={formatHtg(totals.earnedCents, locale)}
-          />
-          <SummaryCard
-            label={text(locale, 'moneySpent')}
-            value={formatHtg(totals.spentCents, locale)}
-          />
-          <SummaryCard
-            label={text(locale, 'estimatedProfit')}
-            value={formatHtg(totals.estimatedProfitCents, locale)}
-          />
-        </View>
-        <Text style={styles.disclaimer}>{text(locale, 'localEstimate')}</Text>
-
         {isLoading ? (
           <View style={styles.loading}>
-            <ActivityIndicator color="#0b5d3b" />
+            <ActivityIndicator color={colors.green} size="large" />
           </View>
+        ) : screen === 'home' ? (
+          <HomeScreen
+            locale={locale}
+            onLocaleChange={setLocale}
+            onStartEntry={startEntry}
+            records={records}
+            saveError={saveError}
+            totals={totals}
+          />
         ) : screen === 'entry' ? (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{text(locale, 'review')}</Text>
-            <Text style={styles.helpText}>{text(locale, 'formHelp')}</Text>
-            <View style={styles.typeRow}>
-              {(['sale', 'expense'] as TransactionType[]).map((type) => (
-                <Pressable
-                  key={type}
-                  accessibilityRole="button"
-                  onPress={() => chooseType(type)}
-                  style={[
-                    styles.typeButton,
-                    draft.type === type && styles.typeButtonSelected,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.typeText,
-                      draft.type === type && styles.typeTextSelected,
-                    ]}
-                  >
-                    {typeLabel(type)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            <Field
-              label={text(locale, 'amount')}
-              value={draft.amount}
-              onChangeText={(value) => updateDraft('amount', value)}
-              keyboardType="decimal-pad"
-              placeholder="0.00"
-            />
-            <Field
-              label={text(locale, 'date')}
-              value={draft.date}
-              onChangeText={(value) => updateDraft('date', value)}
-              placeholder="2026-08-16"
-            />
-            <Field
-              label={text(locale, 'category')}
-              value={draft.category}
-              onChangeText={(value) => updateDraft('category', value)}
-              placeholder={
-                locale === 'fr' ? 'Par exemple: stock' : 'For example: stock'
-              }
-            />
-            <Field
-              label={text(locale, 'note')}
-              value={draft.note}
-              onChangeText={(value) => updateDraft('note', value)}
-              placeholder={locale === 'fr' ? 'Facultatif' : 'Optional'}
-              multiline
-            />
-            {errors.map((error) => (
-              <Text key={error} style={styles.errorText}>
-                {error}
-              </Text>
-            ))}
-            {saveError ? (
-              <Text style={styles.errorText}>{saveError}</Text>
-            ) : null}
-            <PrimaryButton
-              label={text(locale, 'review')}
-              onPress={reviewDraft}
-            />
-          </View>
+          <EntryScreen
+            draft={draft}
+            errors={errors}
+            locale={locale}
+            onBack={() => setScreen('home')}
+            onChange={updateDraft}
+            onLocaleChange={setLocale}
+            onReview={reviewDraft}
+            saveError={saveError}
+          />
         ) : (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>
-              {text(locale, 'reviewHeading')}
-            </Text>
-            <ReviewRow
-              label={typeLabel(draft.type)}
-              value={formatHtg(
-                Number(draft.amount.replace(',', '.')) * 100,
-                locale,
-              )}
-            />
-            <ReviewRow label={text(locale, 'date')} value={draft.date} />
-            <ReviewRow
-              label={text(locale, 'category')}
-              value={draft.category}
-            />
-            {draft.note ? (
-              <ReviewRow label={text(locale, 'note')} value={draft.note} />
-            ) : null}
-            <Text style={styles.statusText}>
-              {text(locale, 'waitingToSync')}
-            </Text>
-            {saveError ? (
-              <Text style={styles.errorText}>{saveError}</Text>
-            ) : null}
-            <PrimaryButton
-              disabled={isSaving}
-              label={
-                isSaving ? text(locale, 'saving') : text(locale, 'confirm')
-              }
-              onPress={() => void confirmDraft()}
-            />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setScreen('entry')}
-              style={styles.secondaryButton}
-            >
-              <Text style={styles.secondaryButtonText}>
-                {text(locale, 'cancel')}
-              </Text>
-            </Pressable>
-          </View>
+          <ReviewScreen
+            draft={draft}
+            isSaving={isSaving}
+            locale={locale}
+            onBack={() => setScreen('entry')}
+            onCancel={() => setScreen('home')}
+            onConfirm={() => void confirmDraft()}
+            onLocaleChange={setLocale}
+            saveError={saveError}
+          />
         )}
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>{text(locale, 'activity')}</Text>
-          {records.length === 0 ? (
-            <Text style={styles.helpText}>{text(locale, 'emptyActivity')}</Text>
-          ) : (
-            records.map((record) => (
-              <View key={record.id} style={styles.activityRow}>
-                <View>
-                  <Text style={styles.activityTitle}>
-                    {typeLabel(record.type)} · {record.category}
-                  </Text>
-                  <Text style={styles.activityMeta}>
-                    {record.date} · {text(locale, 'savedLocal')}
-                  </Text>
-                </View>
-                <Text style={styles.activityAmount}>
-                  {formatHtg(record.amountCents, locale)}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
       </ScrollView>
     </View>
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: string }) {
+function HomeScreen({
+  locale,
+  onLocaleChange,
+  onStartEntry,
+  records,
+  saveError,
+  totals,
+}: {
+  locale: AppLocale;
+  onLocaleChange: (locale: AppLocale) => void;
+  onStartEntry: (type: TransactionType) => void;
+  records: JournalTransaction[];
+  saveError: string | null;
+  totals: ReturnType<typeof calculateTotals>;
+}) {
   return (
-    <View style={styles.summaryCard}>
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={styles.summaryValue}>{value}</Text>
+    <>
+      <BrandHeader locale={locale} onLocaleChange={onLocaleChange} />
+      <Text style={styles.greeting}>{text(locale, 'homeGreeting')}</Text>
+      <Text style={styles.businessName}>{businessName}</Text>
+      <Text style={styles.period}>{text(locale, 'thisWeek')}</Text>
+
+      <View style={styles.metricList}>
+        <MetricRow
+          icon="▣"
+          label={text(locale, 'moneyEarned')}
+          value={formatHtg(totals.earnedCents, locale)}
+          variant="earned"
+        />
+        <MetricRow
+          icon="▢"
+          label={text(locale, 'moneySpent')}
+          value={formatHtg(totals.spentCents, locale)}
+          variant="spent"
+        />
+        <MetricRow
+          icon="⌁"
+          label={text(locale, 'estimatedProfit')}
+          value={formatHtg(totals.estimatedProfitCents, locale)}
+          variant="profit"
+        />
+      </View>
+
+      <Text style={styles.sectionHeading}>
+        {text(locale, 'whatHappenedToday')}
+      </Text>
+      <View style={styles.actionGrid}>
+        <QuickAction
+          icon="＋"
+          label={text(locale, 'recordSale')}
+          onPress={() => onStartEntry('sale')}
+        />
+        <QuickAction
+          icon="−"
+          label={text(locale, 'recordExpense')}
+          onPress={() => onStartEntry('expense')}
+        />
+      </View>
+
+      <View style={styles.activitySection}>
+        <Text style={styles.sectionHeading}>{text(locale, 'activity')}</Text>
+        {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+        {records.length === 0 ? (
+          <View style={styles.emptyActivity}>
+            <Text style={styles.emptyIcon}>✓</Text>
+            <Text style={styles.emptyTitle}>
+              {text(locale, 'noActivityYet')}
+            </Text>
+            <Text style={styles.emptyCopy}>
+              {text(locale, 'emptyActivity')}
+            </Text>
+          </View>
+        ) : (
+          records.map((record) => (
+            <ActivityRow key={record.id} locale={locale} record={record} />
+          ))
+        )}
+      </View>
+      <Text style={styles.disclaimer}>{text(locale, 'localEstimate')}</Text>
+    </>
+  );
+}
+
+function EntryScreen({
+  draft,
+  errors,
+  locale,
+  onBack,
+  onChange,
+  onLocaleChange,
+  onReview,
+  saveError,
+}: {
+  draft: JournalDraft;
+  errors: string[];
+  locale: AppLocale;
+  onBack: () => void;
+  onChange: <Key extends keyof JournalDraft>(
+    key: Key,
+    value: JournalDraft[Key],
+  ) => void;
+  onLocaleChange: (locale: AppLocale) => void;
+  onReview: () => void;
+  saveError: string | null;
+}) {
+  const isSale = draft.type === 'sale';
+  const heading = text(locale, isSale ? 'recordSale' : 'recordExpense');
+
+  return (
+    <>
+      <BrandHeader
+        locale={locale}
+        onBack={onBack}
+        onLocaleChange={onLocaleChange}
+      />
+      <Text style={styles.screenHeading}>{heading}</Text>
+      <Text style={styles.screenPrompt}>
+        {text(locale, isSale ? 'salePrompt' : 'expensePrompt')}
+      </Text>
+
+      <View style={styles.amountRow}>
+        <Text style={styles.currencyMark}>HTG</Text>
+        <TextInput
+          accessibilityLabel={text(locale, 'amount')}
+          keyboardType="decimal-pad"
+          onChangeText={(value) => onChange('amount', value)}
+          placeholder="0"
+          placeholderTextColor="#75808c"
+          style={styles.amountInput}
+          value={draft.amount}
+        />
+      </View>
+
+      <FormRow
+        label={text(locale, isSale ? 'whatSold' : 'whatSpent')}
+        value={draft.category}
+      >
+        <TextInput
+          accessibilityLabel={text(locale, 'category')}
+          onChangeText={(value) => onChange('category', value)}
+          placeholder={text(locale, isSale ? 'saleExample' : 'expenseExample')}
+          placeholderTextColor="#75808c"
+          style={styles.rowInput}
+          value={draft.category}
+        />
+      </FormRow>
+      <FormRow label={text(locale, 'date')} value={draft.date}>
+        <TextInput
+          accessibilityLabel={text(locale, 'date')}
+          onChangeText={(value) => onChange('date', value)}
+          placeholder="2026-08-17"
+          placeholderTextColor="#75808c"
+          style={styles.rowInput}
+          value={draft.date}
+        />
+      </FormRow>
+      <FormRow label={text(locale, 'note')} value="">
+        <TextInput
+          accessibilityLabel={text(locale, 'note')}
+          multiline
+          onChangeText={(value) => onChange('note', value)}
+          placeholder={text(locale, 'noteExample')}
+          placeholderTextColor="#75808c"
+          style={[styles.rowInput, styles.noteInput]}
+          value={draft.note}
+        />
+      </FormRow>
+
+      {errors.map((error) => (
+        <Text key={error} style={styles.errorText}>
+          {error}
+        </Text>
+      ))}
+      {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+      <Text style={styles.actionHint}>{text(locale, 'reviewHint')}</Text>
+      <PrimaryButton
+        label={text(locale, isSale ? 'reviewSale' : 'reviewExpense')}
+        onPress={onReview}
+      />
+    </>
+  );
+}
+
+function ReviewScreen({
+  draft,
+  isSaving,
+  locale,
+  onBack,
+  onCancel,
+  onConfirm,
+  onLocaleChange,
+  saveError,
+}: {
+  draft: JournalDraft;
+  isSaving: boolean;
+  locale: AppLocale;
+  onBack: () => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+  onLocaleChange: (locale: AppLocale) => void;
+  saveError: string | null;
+}) {
+  const isSale = draft.type === 'sale';
+  const amount = formatHtg(
+    Number(draft.amount.replace(',', '.')) * 100,
+    locale,
+  );
+  const typeKey = isSale ? 'sale' : 'expense';
+
+  return (
+    <>
+      <BrandHeader
+        locale={locale}
+        onBack={onBack}
+        onLocaleChange={onLocaleChange}
+      />
+      <Text style={styles.screenHeading}>
+        {text(locale, isSale ? 'reviewSale' : 'reviewExpense')}
+      </Text>
+      <Text style={styles.screenPrompt}>{text(locale, 'reviewPrompt')}</Text>
+      <Text style={styles.sourceLabel}>◉ {text(locale, 'enteredByYou')}</Text>
+      <Text style={styles.reviewSentence}>
+        {text(locale, 'recordThis')}{' '}
+        {typeKey === 'sale' ? text(locale, 'sale') : text(locale, 'expense')}{' '}
+        {text(locale, 'of')} {amount} {text(locale, 'for')} {draft.category}?
+      </Text>
+
+      <ReviewRow
+        label={text(locale, 'amount')}
+        locale={locale}
+        value={amount}
+        onPress={onBack}
+      />
+      <ReviewRow
+        label={text(locale, isSale ? 'whatSold' : 'whatSpent')}
+        locale={locale}
+        value={draft.category}
+        onPress={onBack}
+      />
+      <ReviewRow
+        label={text(locale, 'date')}
+        locale={locale}
+        value={draft.date}
+        onPress={onBack}
+      />
+      {draft.note ? (
+        <ReviewRow
+          label={text(locale, 'note')}
+          locale={locale}
+          value={draft.note}
+          onPress={onBack}
+        />
+      ) : null}
+
+      {saveError ? <Text style={styles.errorText}>{saveError}</Text> : null}
+      <Text style={styles.actionHint}>{text(locale, 'savedOnPhone')}</Text>
+      <Pressable
+        accessibilityLabel={text(locale, 'cancel')}
+        accessibilityRole="button"
+        onPress={onCancel}
+        style={styles.cancelButton}
+      >
+        <Text style={styles.cancelText}>{text(locale, 'cancel')}</Text>
+      </Pressable>
+      <PrimaryButton
+        disabled={isSaving}
+        label={
+          isSaving
+            ? text(locale, 'saving')
+            : text(locale, isSale ? 'confirmSale' : 'confirmExpense')
+        }
+        onPress={onConfirm}
+      />
+    </>
+  );
+}
+
+function BrandHeader({
+  locale,
+  onBack,
+  onLocaleChange,
+}: {
+  locale: AppLocale;
+  onBack?: () => void;
+  onLocaleChange: (locale: AppLocale) => void;
+}) {
+  return (
+    <View style={styles.brandHeader}>
+      {onBack ? (
+        <Pressable
+          accessibilityLabel={text(locale, 'back')}
+          accessibilityRole="button"
+          onPress={onBack}
+          style={styles.backButton}
+        >
+          <Text style={styles.backText}>‹</Text>
+        </Pressable>
+      ) : null}
+      <View style={styles.wordmark}>
+        <Text style={styles.wordmarkHome}>HOME</Text>
+        <Text style={styles.wordmarkRoots}>ROOTS</Text>
+        <Text style={styles.wordmarkFoundation}>FOUNDATION</Text>
+      </View>
+      <View style={styles.headerRight}>
+        <Text style={styles.savedStatus}>✓ {text(locale, 'savedOnPhone')}</Text>
+        <View style={styles.localeRow}>
+          {(['en', 'fr'] as AppLocale[]).map((candidate) => (
+            <Pressable
+              key={candidate}
+              accessibilityRole="button"
+              onPress={() => onLocaleChange(candidate)}
+              style={[
+                styles.localeButton,
+                locale === candidate && styles.localeButtonSelected,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.localeText,
+                  locale === candidate && styles.localeTextSelected,
+                ]}
+              >
+                {candidate === 'en' ? 'EN' : 'FR'}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
 
-function Field({
-  keyboardType,
+function MetricRow({
+  icon,
   label,
-  multiline = false,
-  onChangeText,
-  placeholder,
   value,
+  variant,
 }: {
-  keyboardType?: 'decimal-pad';
+  icon: string;
   label: string;
-  multiline?: boolean;
-  onChangeText: (value: string) => void;
-  placeholder: string;
+  value: string;
+  variant: 'earned' | 'profit' | 'spent';
+}) {
+  const valueStyle =
+    variant === 'spent'
+      ? styles.spentValue
+      : variant === 'profit'
+        ? styles.profitValue
+        : styles.metricValue;
+
+  return (
+    <View style={styles.metricRow}>
+      <View
+        style={[
+          styles.metricIcon,
+          variant === 'spent' ? styles.spentIcon : styles.greenIcon,
+        ]}
+      >
+        <Text style={styles.metricIconText}>{icon}</Text>
+      </View>
+      <Text
+        style={[styles.metricLabel, variant === 'profit' && styles.profitValue]}
+      >
+        {label}
+      </Text>
+      <Text style={valueStyle}>{value}</Text>
+    </View>
+  );
+}
+
+function QuickAction({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: string;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.quickAction}
+    >
+      <Text style={styles.quickActionIcon}>{icon}</Text>
+      <Text style={styles.quickActionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function ActivityRow({
+  locale,
+  record,
+}: {
+  locale: AppLocale;
+  record: JournalTransaction;
+}) {
+  const isSale = record.type === 'sale';
+  return (
+    <View style={styles.activityRow}>
+      <View
+        style={[
+          styles.activityIcon,
+          isSale ? styles.greenIcon : styles.spentIcon,
+        ]}
+      >
+        <Text style={styles.metricIconText}>{isSale ? '+' : '−'}</Text>
+      </View>
+      <View style={styles.activityDescription}>
+        <Text style={styles.activityTitle}>{record.category}</Text>
+        <Text style={styles.activityMeta}>
+          {record.date} · {text(locale, 'savedLocal')}
+        </Text>
+      </View>
+      <Text style={isSale ? styles.activityEarned : styles.activitySpent}>
+        {isSale ? '+' : '−'}
+        {formatHtg(record.amountCents, locale)}
+      </Text>
+    </View>
+  );
+}
+
+function FormRow({
+  children,
+  label,
+}: {
+  children: React.ReactNode;
+  label: string;
   value: string;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        accessibilityLabel={label}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        style={[styles.input, multiline && styles.multilineInput]}
-        value={value}
-      />
+    <View style={styles.formRow}>
+      <Text style={styles.formLabel}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function ReviewRow({
+  label,
+  locale,
+  onPress,
+  value,
+}: {
+  label: string;
+  locale: AppLocale;
+  onPress: () => void;
+  value: string;
+}) {
+  return (
+    <View style={styles.reviewRow}>
+      <View style={styles.reviewCopy}>
+        <Text style={styles.reviewLabel}>{label}</Text>
+        <Text style={styles.reviewValue}>{value}</Text>
+      </View>
+      <Pressable
+        accessibilityLabel={`${text(locale, 'edit')} ${label}`}
+        accessibilityRole="button"
+        onPress={onPress}
+        style={styles.editButton}
+      >
+        <Text style={styles.editButtonText}>✎ {text(locale, 'edit')}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -367,6 +650,7 @@ function PrimaryButton({
 }) {
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
@@ -377,135 +661,311 @@ function PrimaryButton({
   );
 }
 
-function ReviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.reviewRow}>
-      <Text style={styles.reviewLabel}>{label}</Text>
-      <Text style={styles.reviewValue}>{value}</Text>
-    </View>
-  );
-}
+const colors = {
+  coral: '#C83E35',
+  divider: '#D9DDD8',
+  green: '#2D7A3D',
+  navy: '#16265D',
+  surface: '#FFFEFB',
+  text: '#1B2430',
+};
 
 const styles = StyleSheet.create({
-  activityAmount: { color: '#0b5d3b', fontSize: 15, fontWeight: '700' },
-  activityMeta: { color: '#52616b', fontSize: 13, marginTop: 3 },
+  actionGrid: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  actionHint: {
+    color: '#53606c',
+    fontSize: 15,
+    marginTop: 40,
+    textAlign: 'center',
+  },
+  activityDescription: { flex: 1, marginLeft: 12 },
+  activityEarned: { color: colors.green, fontSize: 16, fontWeight: '800' },
+  activityIcon: {
+    alignItems: 'center',
+    borderRadius: 22,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  activityMeta: { color: '#52616b', fontSize: 12, marginTop: 3 },
   activityRow: {
     alignItems: 'center',
-    borderTopColor: '#e4e9e6',
+    borderTopColor: colors.divider,
     borderTopWidth: 1,
     flexDirection: 'row',
+    paddingVertical: 16,
+  },
+  activitySection: {
+    borderTopColor: colors.divider,
+    borderTopWidth: 1,
+    marginTop: 30,
+    paddingTop: 24,
+  },
+  activitySpent: { color: colors.coral, fontSize: 16, fontWeight: '800' },
+  activityTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  amountInput: {
+    borderBottomColor: colors.green,
+    borderBottomWidth: 3,
+    color: colors.navy,
+    flex: 1,
+    fontSize: 48,
+    fontWeight: '800',
+    minHeight: 76,
+    paddingHorizontal: 12,
+  },
+  amountRow: { alignItems: 'center', flexDirection: 'row', marginTop: 36 },
+  backButton: { marginRight: 8, padding: 4 },
+  backText: {
+    color: colors.navy,
+    fontSize: 52,
+    fontWeight: '300',
+    lineHeight: 42,
+  },
+  brandHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 14,
   },
-  activityTitle: { color: '#1f2933', fontSize: 15, fontWeight: '600' },
-  business: { color: '#52616b', fontSize: 14, marginTop: 6 },
+  businessName: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: '800',
+    marginTop: 12,
+  },
   buttonDisabled: { opacity: 0.55 },
-  card: {
-    backgroundColor: '#fff',
-    borderColor: '#dfe7e2',
-    borderRadius: 16,
-    borderWidth: 1,
-    marginTop: 18,
-    padding: 18,
+  cancelButton: { alignItems: 'center', marginTop: 18, padding: 12 },
+  cancelText: { color: colors.navy, fontSize: 18, fontWeight: '800' },
+  currencyMark: {
+    color: colors.navy,
+    fontSize: 29,
+    fontWeight: '800',
+    marginRight: 12,
   },
-  disclaimer: { color: '#52616b', fontSize: 12, lineHeight: 18, marginTop: 10 },
-  errorText: { color: '#aa1b1b', fontSize: 14, marginBottom: 8 },
-  field: { marginTop: 14 },
-  fieldLabel: {
-    color: '#334e3d',
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 6,
+  disclaimer: {
+    color: '#52616b',
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 18,
+    marginTop: 28,
+    textAlign: 'center',
   },
-  header: { marginBottom: 8 },
-  helpText: { color: '#52616b', fontSize: 14, lineHeight: 20 },
-  input: {
-    backgroundColor: '#f8faf9',
-    borderColor: '#b8cbbf',
-    borderRadius: 10,
-    borderWidth: 1,
-    color: '#17211a',
-    fontSize: 16,
-    minHeight: 46,
+  editButton: {
+    borderColor: colors.green,
+    borderRadius: 8,
+    borderWidth: 2,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  loading: { alignItems: 'center', minHeight: 220, paddingTop: 70 },
-  localeButton: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 7 },
-  localeButtonSelected: { backgroundColor: '#d9f4e4' },
-  localeRow: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: 10,
-  },
-  localeText: { color: '#42634d', fontSize: 13, fontWeight: '600' },
-  localeTextSelected: { color: '#075c36' },
-  multilineInput: { minHeight: 72, textAlignVertical: 'top' },
-  page: { backgroundColor: '#f3f7f4', flexGrow: 1, padding: 18 },
-  primaryButton: {
+  editButtonText: { color: colors.green, fontSize: 15, fontWeight: '800' },
+  emptyActivity: {
     alignItems: 'center',
-    backgroundColor: '#0b6b40',
-    borderRadius: 10,
-    marginTop: 18,
-    minHeight: 48,
-    paddingVertical: 14,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
   },
-  primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  reviewLabel: { color: '#52616b', fontSize: 14 },
-  reviewRow: {
-    borderTopColor: '#e4e9e6',
-    borderTopWidth: 1,
-    paddingVertical: 12,
+  emptyCopy: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 10,
+    textAlign: 'center',
   },
-  reviewValue: {
-    color: '#1f2933',
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 3,
+  emptyIcon: { color: colors.green, fontSize: 46, fontWeight: '800' },
+  emptyTitle: {
+    color: colors.navy,
+    fontSize: 24,
+    fontWeight: '800',
+    marginTop: 12,
   },
-  safeArea: { backgroundColor: '#f3f7f4', flex: 1 },
-  secondaryButton: { alignItems: 'center', marginTop: 12, padding: 10 },
-  secondaryButtonText: { color: '#0b6b40', fontSize: 15, fontWeight: '700' },
-  sectionTitle: {
-    color: '#173d27',
-    fontSize: 20,
+  errorText: { color: '#A6201A', fontSize: 14, lineHeight: 20, marginTop: 14 },
+  formLabel: {
+    color: colors.navy,
+    fontSize: 17,
     fontWeight: '800',
     marginBottom: 8,
   },
-  statusText: {
-    color: '#075c36',
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 8,
+  formRow: {
+    borderTopColor: colors.divider,
+    borderTopWidth: 1,
+    marginTop: 28,
+    paddingTop: 22,
   },
-  subtitle: { color: '#334e3d', fontSize: 16, marginTop: 4 },
-  summaryCard: {
-    backgroundColor: '#e7f5ec',
-    borderRadius: 12,
-    flex: 1,
-    minHeight: 92,
-    padding: 12,
-  },
-  summaryGrid: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  summaryLabel: { color: '#3b5c47', fontSize: 12, lineHeight: 16 },
-  summaryValue: {
-    color: '#124d30',
-    fontSize: 15,
+  greenIcon: { backgroundColor: '#E8F4E9' },
+  greeting: {
+    color: colors.text,
+    fontSize: 34,
     fontWeight: '800',
-    marginTop: 8,
+    marginTop: 40,
   },
-  title: { color: '#123b27', fontSize: 29, fontWeight: '800' },
-  typeButton: {
+  headerRight: { alignItems: 'flex-end', flex: 1 },
+  loading: {
     alignItems: 'center',
-    borderColor: '#9cbda8',
-    borderRadius: 10,
-    borderWidth: 1,
     flex: 1,
-    padding: 12,
+    justifyContent: 'center',
+    minHeight: 500,
   },
-  typeButtonSelected: { backgroundColor: '#0b6b40', borderColor: '#0b6b40' },
-  typeRow: { flexDirection: 'row', gap: 10, marginTop: 16 },
-  typeText: { color: '#234b33', fontSize: 15, fontWeight: '700' },
-  typeTextSelected: { color: '#fff' },
+  localeButton: { borderRadius: 12, paddingHorizontal: 7, paddingVertical: 4 },
+  localeButtonSelected: { backgroundColor: '#E8F4E9' },
+  localeRow: { flexDirection: 'row', gap: 2, marginTop: 8 },
+  localeText: { color: '#52616b', fontSize: 11, fontWeight: '800' },
+  localeTextSelected: { color: colors.green },
+  metricIcon: {
+    alignItems: 'center',
+    borderRadius: 24,
+    height: 48,
+    justifyContent: 'center',
+    width: 48,
+  },
+  metricIconText: { color: colors.green, fontSize: 23, fontWeight: '800' },
+  metricLabel: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 16,
+  },
+  metricList: {
+    borderTopColor: colors.divider,
+    borderTopWidth: 1,
+    marginTop: 30,
+  },
+  metricRow: {
+    alignItems: 'center',
+    borderBottomColor: colors.divider,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    minHeight: 94,
+  },
+  metricValue: {
+    color: colors.navy,
+    fontSize: 19,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  noteInput: { minHeight: 64, textAlignVertical: 'top' },
+  page: { backgroundColor: colors.surface, flexGrow: 1, padding: 22 },
+  period: {
+    color: colors.navy,
+    fontSize: 19,
+    fontWeight: '700',
+    marginTop: 24,
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: colors.green,
+    borderRadius: 8,
+    marginBottom: 18,
+    marginTop: 16,
+    minHeight: 58,
+    paddingVertical: 16,
+  },
+  primaryButtonText: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
+  profitValue: { color: colors.green },
+  quickAction: {
+    alignItems: 'center',
+    borderColor: colors.green,
+    borderRadius: 10,
+    borderWidth: 2,
+    flex: 1,
+    minHeight: 116,
+    padding: 14,
+  },
+  quickActionIcon: { color: colors.green, fontSize: 34, fontWeight: '800' },
+  quickActionText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  reviewCopy: { flex: 1, paddingRight: 12 },
+  reviewLabel: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  reviewRow: {
+    alignItems: 'center',
+    borderTopColor: colors.divider,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    paddingVertical: 16,
+  },
+  reviewSentence: {
+    color: colors.navy,
+    fontSize: 25,
+    fontWeight: '800',
+    lineHeight: 34,
+    marginBottom: 28,
+    marginTop: 30,
+  },
+  reviewValue: {
+    color: colors.navy,
+    fontSize: 21,
+    fontWeight: '800',
+    marginTop: 5,
+  },
+  rowInput: { color: colors.text, fontSize: 19, minHeight: 44, padding: 0 },
+  safeArea: { backgroundColor: colors.surface, flex: 1 },
+  savedStatus: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  screenHeading: {
+    color: colors.navy,
+    fontSize: 44,
+    fontWeight: '800',
+    lineHeight: 50,
+    marginTop: 44,
+  },
+  screenPrompt: {
+    color: colors.text,
+    fontSize: 21,
+    fontWeight: '600',
+    lineHeight: 30,
+    marginTop: 14,
+  },
+  sectionHeading: {
+    color: colors.text,
+    fontSize: 29,
+    fontWeight: '800',
+    lineHeight: 36,
+    marginTop: 30,
+  },
+  sourceLabel: {
+    color: colors.green,
+    fontSize: 16,
+    fontWeight: '800',
+    marginTop: 26,
+  },
+  spentIcon: { backgroundColor: '#FBE7E4' },
+  spentValue: {
+    color: colors.coral,
+    fontSize: 19,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  wordmark: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    maxWidth: 148,
+  },
+  wordmarkFoundation: {
+    color: '#52616b',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    width: '100%',
+  },
+  wordmarkHome: {
+    color: '#C71924',
+    fontSize: 19,
+    fontWeight: '900',
+    letterSpacing: -0.6,
+  },
+  wordmarkRoots: {
+    color: colors.green,
+    fontSize: 19,
+    fontWeight: '900',
+    letterSpacing: -0.6,
+    marginLeft: 3,
+  },
 });

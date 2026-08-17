@@ -17,6 +17,8 @@
   - Evidence: `App.tsx` keeps drafts in memory until review/confirm; `src/domain/journal.ts` validates required values and uses stable identities; SQLite and memory repositories ignore repeated transaction identities.
 - [x] 2.4 Implement recent activity, local earnings/spending/estimated-profit totals, and user-understandable local status without network behavior.
   - Evidence: the local UI derives activity and totals only from confirmed records and labels status as Saved on this phone/Waiting to sync with no network client.
+- [x] 2.5 Correct the manual Phase-1 flow to start on the selected M1 Home visual pattern, provide only functional sale/expense quick actions, route through entry/review/confirmation, and return to updated Home.
+  - Evidence: user-confirmed scope on 2026-08-17 after installed-APK visual comparison identified the form-first implementation gap. `App.tsx` now starts on Home, routes each quick action through entry/review/confirmation, returns to Home on save, and keeps speech/receipt out of Phase 1; the updated component test and 2026-08-17 local check pass. Reference `ai-planning/design-assets/M1/home-roots-mobile-home-screen-concept-v1.png`; do not extract its generated logo treatment. Physical-device visual comparison remains task 4.2 evidence.
 
 ## 3. Deterministic Validation
 

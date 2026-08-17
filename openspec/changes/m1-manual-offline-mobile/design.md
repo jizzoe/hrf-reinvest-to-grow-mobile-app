@@ -41,6 +41,23 @@ Keep visible strings in English/French resource maps and centralize HTG monetary
 
 Alternative considered: hard-coded text or runtime translation. Rejected because hard-coded text cannot supply French evidence and runtime translation would add an unapproved network/privacy dependency.
 
+### Home-first visual control for the manual Phase-1 flow
+
+The component starts on a synthetic Business Journal Home rather than an entry
+form. It follows the selected central visual reference
+`ai-planning/design-assets/M1/home-roots-mobile-home-screen-concept-v1.png`:
+a warm near-white surface, deep navy information hierarchy, green/coral financial
+meaning paired with text, aligned metric rows, compact saved-local status, and
+large outlined action controls. Phase 1 shows only functional `Record sale` and
+`Record expense` actions; speech and receipt controls are omitted rather than
+shown as dead ends. The route is `Home -> entry -> review -> confirm -> updated
+Home`.
+
+The source repository does not include the original Home Roots Foundation logo
+asset. Until the owner supplies it, implementation uses a code-built text
+wordmark; it must not crop or extract the generated logo treatment from the
+reference PNG.
+
 ### Proportional deterministic checks before device evidence
 
 Use unit/component checks for validation, confirmation/cancellation, persistence/restart mapping, totals, locale resources, and outbox identity. Add a repeatable Android build/config check, then create the EAS APK for physical-device evidence. The component’s Apply evidence must name the exact commands and outcomes.
@@ -54,6 +71,9 @@ Alternative considered: rely on manual emulator verification. Rejected because i
 - [EAS free-plan queue or build failure] → Retry within the approved free plan and record the build outcome; do not upgrade or create paid services.
 - [Physical device unavailable or APK cannot install] → keep physical-device acceptance incomplete and do not claim M1 completion.
 - [Locale/device behavior differs from tests] → capture synthetic Android 15 device evidence and record any divergence for central re-pin/amendment.
+- [Visual reference is not reflected in the rendered flow] → compare the Home,
+  entry, review, and saved-local return states with their selected M1 reference
+  images before submitting a replacement acceptance build.
 
 ## Migration Plan
 
