@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  Product: the synthetic-data Android-first M1 mobile prototype for Home Roots
+  Foundation's Reinvest-to-Grow methodology.
+
+  Repository boundary: this repository owns Expo/React Native mobile source,
+  local SQLite persistence, tests, Android build configuration, component-local
+  OpenSpec changes, and component evidence. Product-wide planning, central
+  contract acceptance, cross-repository linkage, and system acceptance remain in
+  jizzoe/home-roots-reinvest-in-growth.
+
+  Current central linkage: m1-manual-offline-delivery contract pin
+  bd55571688818a47746dae673c35d7f2a125b77e. The dispatched Phase-1 component is
+  m1-manual-offline-mobile. It targets Android only, the application identifier
+  org.homerootsfoundation.reinvesttogrow, synthetic HTG examples, and English/
+  French resources.
+
+  Supported assistant: Codex. The approved lifecycle is Explore, Propose, Apply,
+  Verify, Sync, and Archive. Generated lifecycle integrations under
+  .agents/skills/openspec-* are OpenSpec-owned and must be regenerated rather
+  than edited.
+
+  Canonical locations: OpenSpec behavior and change artifacts live under
+  openspec/. Repository policy lives in AGENTS.md, docs/sdd-workflow.md, and
+  docs/ai-assistant-governance.md. Bootstrap evidence lives under
+  docs/sdd-bootstrap-evidence/. Non-secret skill and GitHub lifecycle defaults
+  live in config/.
+
+  Quality and safety: synthetic data only. Never commit credentials, personal or
+  participant data, production financial data, signing material, device
+  identifiers, or mutable approvals. Apply requires explicit approval of the
+  component change, repository scope, external EAS boundary, and validation
+  plan. No AWS, other cloud provider, backend sync, iOS/TestFlight, speech, or
+  receipt/OCR work belongs in the Phase-1 component.
+
+rules:
+  proposal:
+    - State the central contract/change link, component outcome, scope, non-goals, external boundaries, and evidence return requirement.
+  specs:
+    - Describe observable mobile behavior and failure/boundary scenarios; preserve Android-only, synthetic-only, offline-first, and confirmation constraints.
+  design:
+    - Record consequential package, local-storage, build, privacy, recovery, and external-service decisions with alternatives.
+  tasks:
+    - Keep tasks ordered and independently verifiable; include deterministic checks, safe evidence, exact external actions, and a component return record.
+
+operations:
+  apply:
+    guidance:
+      - Begin only after explicit human approval of the proposal, specifications, design, tasks, repository scope, external writes, and validation commands.
+      - Preserve unrelated work and generated files; do not expand into a different M1 phase or cloud provider.
+      - Record objective component evidence and return it to the central ledger before central verification.
+  archive:
+    guidance:
+      - Archive only after component Verify, explicit component Gate-2 approval, required Sync, central return evidence, and explicit central closure approval.

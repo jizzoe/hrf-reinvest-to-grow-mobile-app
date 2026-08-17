@@ -1,0 +1,37 @@
+{
+  "name": "hrf-reinvest-to-grow-mobile-app",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "expo": "~57.0.13",
+    "expo-crypto": "~57.0.1",
+    "expo-localization": "~57.0.1",
+    "expo-sqlite": "~57.0.1",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.2"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.0.1",
+    "@types/jest": "29.5.14",
+    "@types/react": "~19.2.2",
+    "jest-expo": "^57.0.4",
+    "prettier": "^3.9.6",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "format:check": "prettier --check App.tsx App.test.tsx index.ts src app.json eas.json package.json tsconfig.json .prettierrc.json docs/brand-assets.md docs/dependency-evidence/m1-manual-offline-mobile.md",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "check": "npm run format:check && npm run typecheck && npm run test",
+    "android:config": "expo config --type public"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "private": true
+}

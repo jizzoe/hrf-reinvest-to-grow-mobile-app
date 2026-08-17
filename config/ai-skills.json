@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "defaults": {
+    "governancePath": "docs/ai-assistant-governance.md",
+    "workflowPath": "docs/sdd-workflow.md",
+    "bootstrapEvidenceRoot": "docs/sdd-bootstrap-evidence",
+    "deliveryProfile": "prototype-rapid",
+    "centralContractChange": "m1-manual-offline-delivery"
+  },
+  "triggeredSkills": [
+    "base-code-review",
+    "base-verification-loop",
+    "github-issue-authoring",
+    "github-issue-to-openspec",
+    "openspec-github-sync",
+    "project-pr-status-sync"
+  ]
+}

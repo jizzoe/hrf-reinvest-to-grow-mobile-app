@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Reinvest to Grow",
+    "slug": "hrf-reinvest-to-grow",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "org.homerootsfoundation.reinvesttogrow",
+      "versionCode": 2,
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": ["expo-sqlite", "expo-localization"],
+    "extra": {
+      "eas": {
+        "projectId": "85d7d86a-ee85-4b82-85ef-8a6b7e26eb48"
+      }
+    },
+    "owner": "joericearchitect"
+  }
+}
