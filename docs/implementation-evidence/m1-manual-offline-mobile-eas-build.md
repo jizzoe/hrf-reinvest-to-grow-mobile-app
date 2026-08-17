@@ -33,9 +33,33 @@ content correlation for this first APK. A future reproducibility build must be
 submitted from a clean, committed exact head under a separately approved build
 action.
 
+## Replacement Build — Home Flow And Official Temporary Logo
+
+Date: 2026-08-17
+
+- Build ID: `db6deffa-27f5-43d3-8f1b-9a25fc26678b`.
+- Result: `FINISHED` Android internal-distribution APK.
+- Build profile: `preview`; `distribution: internal`; Android APK build type.
+- Android application identifier: `org.homerootsfoundation.reinvesttogrow`.
+- App version: `1.0.1`; Android build version: `2`.
+- Build fingerprint: `ba5ae59ae4efef1cc5e27b7ebce65db0d2b9acdd`.
+- Exact source revision: `7466c401e45db91b917e5fda310fde4524ccb1bf`
+  (`[M1] Use official temporary Home Roots logo`).
+- Source coverage: Home-first routing, two functional Phase-1 actions, and the
+  official Home Roots Foundation temporary PNG at
+  `assets/brand/home-roots-foundation-logo-temporary.png`.
+- Signing: the existing EAS-managed Android keystore was used; no signing
+  material was recorded locally.
+- Expiration: 2026-08-31.
+
+This replacement corrects the first build's source-traceability gap: EAS
+metadata names the exact committed source revision that was uploaded. As with
+the first APK, the artifact URL is provided directly to the authorized owner
+and is not committed to this public repository.
+
 ## Pending Human Acceptance
 
-The owner must install this APK on the representative Android 15 device and
+The owner must install the replacement APK on the representative Android 15 device and
 record synthetic manual sale/expense, restart persistence, local outbox/status,
 activity/totals, and English/French smoke evidence. Until then the physical-
 device requirement and component Verify remain incomplete.

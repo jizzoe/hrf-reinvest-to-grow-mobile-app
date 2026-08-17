@@ -17,13 +17,13 @@ Date: 2026-08-16; amended 2026-08-17
 
 ## Commands And Outcomes
 
-| Command | Outcome | Coverage |
-| --- | --- | --- |
-| `npm run format:check` | Passed. | Component-owned TypeScript, app/EAS config, package config, and dependency evidence formatting. |
-| `npm run typecheck` | Passed. | Expo application, domain, SQLite repository, and test source type safety. |
-| `npm test` | Passed: 3 suites, 6 tests. | Draft validation, English/French status resources, confirmation identity, totals, restart-model outbox identity, and review-before-save UI. |
-| `npm run android:config` | Passed. | Public Expo config resolves the approved Android package and SQLite/localization plugins. |
-| `npx expo install --check` | Passed after aligning `@types/jest` to Expo SDK 57's compatible `29.5.14`. | SDK/package compatibility. |
+| Command                    | Outcome                                                                    | Coverage                                                                                                                                    |
+| -------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run format:check`     | Passed.                                                                    | Component-owned TypeScript, app/EAS config, package config, and dependency evidence formatting.                                             |
+| `npm run typecheck`        | Passed.                                                                    | Expo application, domain, SQLite repository, and test source type safety.                                                                   |
+| `npm test`                 | Passed: 3 suites, 6 tests.                                                 | Draft validation, English/French status resources, confirmation identity, totals, restart-model outbox identity, and review-before-save UI. |
+| `npm run android:config`   | Passed.                                                                    | Public Expo config resolves the approved Android package and SQLite/localization plugins.                                                   |
+| `npx expo install --check` | Passed after aligning `@types/jest` to Expo SDK 57's compatible `29.5.14`. | SDK/package compatibility.                                                                                                                  |
 
 ## 2026-08-17 Corrective Home-Flow Check
 
@@ -37,6 +37,15 @@ Date: 2026-08-16; amended 2026-08-17
   confirm return to Home. It does not replace fresh installed-APK visual/device
   evidence.
 
+## 2026-08-17 Replacement APK
+
+- EAS build `db6deffa-27f5-43d3-8f1b-9a25fc26678b` finished as internal
+  Android APK version `1.0.1` / build version `2` from exact committed source
+  revision `7466c401e45db91b917e5fda310fde4524ccb1bf`.
+- The build includes the Home-first correction and the official temporary Home
+  Roots Foundation logo asset. Its artifact URL is intentionally retained only
+  in the authorized owner handoff, not this public repository.
+
 ## Residual Gaps
 
 - `npm audit` reports 19 upstream dependency vulnerabilities (7 moderate, 12
@@ -45,7 +54,6 @@ Date: 2026-08-16; amended 2026-08-17
   change if needed.
 - npm reports an optional `fsevents` install-script review notice. It is not
   needed for the Android target and no script approval was granted.
-- A corrected replacement Android APK and its physical Android 15 visual/device
-  run remain pending. The previously installed APK is not source-equivalent to
-  this correction. Local test doubles do not replace installed-APK persistence
-  and visual evidence on the representative device.
+- The corrected Android APK's physical Android 15 visual/device run remains
+  pending. Local test doubles do not replace installed-APK persistence and
+  visual evidence on the representative device.
