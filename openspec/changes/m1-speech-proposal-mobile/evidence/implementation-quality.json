@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "skill": "base-verification-loop",
+  "status": "completed",
+  "mode": "autonomous",
+  "summary": "The exact speech proposal implementation revision is ready for formal OpenSpec Verify under the prototype-rapid profile.",
+  "artifacts": [
+    {
+      "kind": "file",
+      "operation": "created",
+      "subject": "docs/implementation-evidence/m1-speech-proposal-mobile-verification.md"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "focused",
+      "type": "test",
+      "subject": "complete component Jest and TypeScript checks: 6 suites and 23 tests",
+      "result": "passed"
+    },
+    {
+      "id": "critical",
+      "type": "test",
+      "subject": "truthful sample, editable proposal, explicit confirmation, durable save, and manual fallback critical flow",
+      "result": "passed"
+    },
+    {
+      "id": "local-review",
+      "type": "review",
+      "subject": "exact changed paths from the approved component plan revision through the implementation revision",
+      "result": "passed"
+    }
+  ],
+  "assumptions": [
+    "The verification-loop UI schema models only none or web; this native mobile change uses none so web screenshot and axe evidence are not falsely asserted.",
+    "Physical Android TTS, enlarged-text, and installability acceptance remain in the separately gated device evidence lifecycle and are not Apply-readiness gaps."
+  ],
+  "openQuestions": [],
+  "nextAction": {
+    "kind": "continue",
+    "description": "Run formal component OpenSpec Verify at the exact evidence head without starting an EAS operation."
+  },
+  "details": {
+    "profile": "prototype-rapid",
+    "uiScope": {
+      "kind": "none",
+      "layoutChanged": false,
+      "materiallyChanged": false
+    },
+    "intendedBehavior": "A truthfully disclosed deterministic local speech-shaped sample produces an editable sale proposal; only explicit confirmation creates one durable sale and queued outbox identity, while cancellation, replacement, TTS, errors, and fallback never acquire write authority.",
+    "criticalPath": "Start the offline sample from Home, inspect and edit the known 500 HTG rice proposal, confirm it, verify source context, activity, totals, and one outbox identity, then verify cancel, record-again, failure, TTS-error, and manual fallback non-write behavior.",
+    "changedPaths": [
+      "App.test.tsx",
+      "App.tsx",
+      "docs/dependency-evidence/m1-speech-proposal-mobile.md",
+      "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+      "docs/implementation-evidence/m1-speech-proposal-mobile-local-review.md",
+      "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-final.json",
+      "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-initial.json",
+      "openspec/changes/m1-speech-proposal-mobile/tasks.md",
+      "package-lock.json",
+      "package.json",
+      "src/domain/journal.ts",
+      "src/domain/types.ts",
+      "src/speech/speechProposal.test.ts",
+      "src/speech/speechProposal.ts",
+      "src/speech/tts.test.ts",
+      "src/speech/tts.ts",
+      "src/storage/journalRepository.test.ts",
+      "src/storage/journalRepository.ts",
+      "src/storage/memoryJournalRepository.test.ts"
+    ],
+    "selectedChecks": [
+      {
+        "id": "focused-unit-or-integration",
+        "category": "focused",
+        "required": true,
+        "result": "passed",
+        "evidenceId": "focused"
+      },
+      {
+        "id": "critical-flow",
+        "category": "critical-flow",
+        "required": true,
+        "result": "passed",
+        "evidenceId": "critical"
+      },
+      {
+        "id": "local-review",
+        "category": "review",
+        "required": true,
+        "result": "passed",
+        "evidenceId": "local-review"
+      }
+    ],
+    "evidenceBindings": [
+      {
+        "evidenceId": "focused",
+        "binding": {
+          "kind": "commit",
+          "value": "c7e4abe5a5201b2fe0617c7b51614ee73985581f"
+        },
+        "changedPaths": [
+          "App.test.tsx",
+          "App.tsx",
+          "docs/dependency-evidence/m1-speech-proposal-mobile.md",
+          "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+          "docs/implementation-evidence/m1-speech-proposal-mobile-local-review.md",
+          "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-final.json",
+          "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-initial.json",
+          "openspec/changes/m1-speech-proposal-mobile/tasks.md",
+          "package-lock.json",
+          "package.json",
+          "src/domain/journal.ts",
+          "src/domain/types.ts",
+          "src/speech/speechProposal.test.ts",
+          "src/speech/speechProposal.ts",
+          "src/speech/tts.test.ts",
+          "src/speech/tts.ts",
+          "src/storage/journalRepository.test.ts",
+          "src/storage/journalRepository.ts",
+          "src/storage/memoryJournalRepository.test.ts"
+        ]
+      },
+      {
+        "evidenceId": "critical",
+        "binding": {
+          "kind": "commit",
+          "value": "c7e4abe5a5201b2fe0617c7b51614ee73985581f"
+        },
+        "changedPaths": [
+          "App.test.tsx",
+          "App.tsx",
+          "docs/dependency-evidence/m1-speech-proposal-mobile.md",
+          "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+          "docs/implementation-evidence/m1-speech-proposal-mobile-local-review.md",
+          "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-final.json",
+          "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-initial.json",
+          "openspec/changes/m1-speech-proposal-mobile/tasks.md",
+          "package-lock.json",
+          "package.json",
+          "src/domain/journal.ts",
+          "src/domain/types.ts",
+          "src/speech/speechProposal.test.ts",
+          "src/speech/speechProposal.ts",
+          "src/speech/tts.test.ts",
+          "src/speech/tts.ts",
+          "src/storage/journalRepository.test.ts",
+          "src/storage/journalRepository.ts",
+          "src/storage/memoryJournalRepository.test.ts"
+        ]
+      },
+      {
+        "evidenceId": "local-review",
+        "binding": {
+          "kind": "commit",
+          "value": "c7e4abe5a5201b2fe0617c7b51614ee73985581f"
+        },
+        "changedPaths": [
+          "App.test.tsx",
+          "App.tsx",
+          "docs/dependency-evidence/m1-speech-proposal-mobile.md",
+          "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+          "docs/implementation-evidence/m1-speech-proposal-mobile-local-review.md",
+          "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-final.json",
+          "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-initial.json",
+          "openspec/changes/m1-speech-proposal-mobile/tasks.md",
+          "package-lock.json",
+          "package.json",
+          "src/domain/journal.ts",
+          "src/domain/types.ts",
+          "src/speech/speechProposal.test.ts",
+          "src/speech/speechProposal.ts",
+          "src/speech/tts.test.ts",
+          "src/speech/tts.ts",
+          "src/storage/journalRepository.test.ts",
+          "src/storage/journalRepository.ts",
+          "src/storage/memoryJournalRepository.test.ts"
+        ]
+      }
+    ],
+    "correctionBudget": 3,
+    "correctionAttempts": [],
+    "reviewedPaths": [
+      "App.test.tsx",
+      "App.tsx",
+      "docs/dependency-evidence/m1-speech-proposal-mobile.md",
+      "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+      "docs/implementation-evidence/m1-speech-proposal-mobile-local-review.md",
+      "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-final.json",
+      "openspec/changes/m1-speech-proposal-mobile/evidence/local-code-review-initial.json",
+      "openspec/changes/m1-speech-proposal-mobile/tasks.md",
+      "package-lock.json",
+      "package.json",
+      "src/domain/journal.ts",
+      "src/domain/types.ts",
+      "src/speech/speechProposal.test.ts",
+      "src/speech/speechProposal.ts",
+      "src/speech/tts.test.ts",
+      "src/speech/tts.ts",
+      "src/storage/journalRepository.test.ts",
+      "src/storage/journalRepository.ts",
+      "src/storage/memoryJournalRepository.test.ts"
+    ],
+    "localReviewFindings": [],
+    "unresolvedGaps": [],
+    "recoverySteps": [
+      "Rerun every selected check if the implementation commit or changed-path set changes.",
+      "Before Archive, revert the change-owned commits and remove expo-speech and speech entry points while retaining the compatible nullable migration."
+    ],
+    "binding": {
+      "kind": "commit",
+      "value": "c7e4abe5a5201b2fe0617c7b51614ee73985581f"
+    },
+    "readiness": "ready-for-openspec-verify"
+  }
+}

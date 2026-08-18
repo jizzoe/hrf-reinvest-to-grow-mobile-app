@@ -1,0 +1,34 @@
+{
+  "localImplementationAuthorization": {
+    "authorization": {
+      "targets": ["workspace:component"],
+      "allowedMutations": ["objective-correction"],
+      "correctionBudgetPerFailureSignature": 3,
+      "target": {
+        "entries": ["m1-speech-proposal-mobile"]
+      }
+    },
+    "runtime": {
+      "permittedOperations": ["objective-correction"]
+    },
+    "config": {},
+    "request": {
+      "target": "workspace:component/App.tsx",
+      "selectedEntry": "m1-speech-proposal-mobile"
+    },
+    "checkpoint": {
+      "selectedEntry": {
+        "name": "m1-speech-proposal-mobile",
+        "records": [],
+        "verificationRecords": [],
+        "correctionAnchor": {
+          "baseCommit": "483d8fa8d9c330d85f25aa2e65c2fb485f633cba",
+          "headCommit": "c7e4abe5a5201b2fe0617c7b51614ee73985581f",
+          "manifestDigest": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "correctionRecords": []
+      },
+      "steps": []
+    }
+  }
+}

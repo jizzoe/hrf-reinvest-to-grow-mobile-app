@@ -4,12 +4,28 @@ export type TransactionType = 'sale' | 'expense';
 
 export type TransactionStatus = 'saved_local';
 
+export type SpeechProposalValues = {
+  type: 'sale';
+  amount: string;
+  date: string;
+  category: string;
+  note: string;
+};
+
+export type SpeechProposalContext = {
+  sourceType: 'speech_transcript';
+  fixtureId: 'synthetic-rice-sale-500';
+  rawInput: 'I sold rice for 500 gourdes today';
+  originalProposal: SpeechProposalValues;
+};
+
 export type JournalDraft = {
   type: TransactionType;
   amount: string;
   date: string;
   category: string;
   note: string;
+  sourceContext?: SpeechProposalContext;
 };
 
 export type JournalTransaction = {
@@ -25,6 +41,7 @@ export type JournalTransaction = {
   confirmationState: 'confirmed';
   status: TransactionStatus;
   createdAt: string;
+  sourceContext?: SpeechProposalContext;
 };
 
 export type OutboxRecord = {

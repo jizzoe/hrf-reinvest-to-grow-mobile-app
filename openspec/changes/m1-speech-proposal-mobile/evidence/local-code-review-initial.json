@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "skill": "base-code-review",
+  "status": "completed",
+  "mode": "autonomous",
+  "summary": "Bounded implementation review and correction rereview found four medium objective defects requiring behavior-preserving correction before readiness.",
+  "artifacts": [
+    { "kind": "file", "operation": "read", "subject": "App.tsx" },
+    { "kind": "file", "operation": "read", "subject": "App.test.tsx" },
+    { "kind": "file", "operation": "read", "subject": "src/domain/journal.ts" },
+    { "kind": "file", "operation": "read", "subject": "src/domain/types.ts" },
+    { "kind": "file", "operation": "read", "subject": "src/speech/speechProposal.ts" },
+    { "kind": "file", "operation": "read", "subject": "src/speech/tts.ts" },
+    { "kind": "file", "operation": "read", "subject": "src/storage/journalRepository.ts" },
+    { "kind": "file", "operation": "read", "subject": "package.json" },
+    { "kind": "file", "operation": "read", "subject": "package-lock.json" }
+  ],
+  "evidence": [
+    { "id": "review-current-implementation", "type": "review", "subject": "current speech implementation and tests", "result": "passed", "reference": "bounded changed-path review at 2026-08-17T22:37:45Z" },
+    { "id": "current-profile-checks", "type": "validation", "subject": "prototype-rapid local checks", "result": "passed", "reference": "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md" },
+    { "id": "central-contract", "type": "record", "subject": "approved speech proposal contract", "result": "passed", "reference": "central pin 48cb1ad511a3d578c347889e5c78e8a967c16dab" }
+  ],
+  "assumptions": [
+    "The local SQLite database can contain legacy or interrupted-migration data and must fail safely when optional source metadata is malformed.",
+    "The visible-label requirement applies to the reused back action when it is rendered inside the new speech states."
+  ],
+  "openQuestions": [],
+  "nextAction": { "kind": "continue", "description": "Apply the four bounded objective fixes, rerun affected tests and profile checks, and conduct an exact changed-path rereview." },
+  "details": {
+    "reviewedScope": {
+      "targets": [
+        "App.tsx",
+        "App.test.tsx",
+        "package.json",
+        "package-lock.json",
+        "src/domain/journal.ts",
+        "src/domain/types.ts",
+        "src/speech/speechProposal.ts",
+        "src/speech/speechProposal.test.ts",
+        "src/speech/tts.ts",
+        "src/speech/tts.test.ts",
+        "src/storage/journalRepository.ts",
+        "src/storage/journalRepository.test.ts",
+        "src/storage/memoryJournalRepository.test.ts",
+        "docs/dependency-evidence/m1-speech-proposal-mobile.md",
+        "docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+        "openspec/changes/m1-speech-proposal-mobile/"
+      ],
+      "contextPaths": [
+        "AGENTS.md",
+        "docs/sdd-workflow.md",
+        "docs/ai-assistant-governance.md",
+        "openspec/specs/manual-offline-business-journal/spec.md"
+      ],
+      "evidenceIds": ["review-current-implementation", "current-profile-checks", "central-contract"]
+    },
+    "findings": [
+      {
+        "id": "speech-back-visible-label",
+        "severity": "medium",
+        "disposition": "objective-fix",
+        "subject": "App.tsx",
+        "evidenceIds": ["review-current-implementation", "central-contract"],
+        "impact": "The reused back action has an accessible name but only a chevron on screen, so speech states do not give every action a visible purpose label.",
+        "recommendation": "Render the localized Back text beside the chevron while retaining the accessible name and button semantics."
+      },
+      {
+        "id": "tts-locale-summary-mismatch",
+        "severity": "medium",
+        "disposition": "objective-fix",
+        "subject": "App.tsx",
+        "evidenceIds": ["review-current-implementation", "central-contract"],
+        "impact": "Switching locale during playback changes the visible summary without stopping the old-language spoken summary, temporarily breaking the same-visible-summary contract.",
+        "recommendation": "Stop TTS and reset its transient status before applying any locale change."
+      },
+      {
+        "id": "tts-native-exception-fail-safe",
+        "severity": "medium",
+        "disposition": "objective-fix",
+        "subject": "src/speech/tts.ts",
+        "evidenceIds": ["review-current-implementation", "central-contract"],
+        "impact": "A synchronous native speak exception or rejected stop promise can escape the adapter instead of preserving the visible review fallback.",
+        "recommendation": "Convert synchronous speak failures into the existing onError path and consume stop rejections without changing proposal state."
+      },
+      {
+        "id": "speech-source-json-fail-safe",
+        "severity": "medium",
+        "disposition": "objective-fix",
+        "subject": "src/storage/journalRepository.ts",
+        "evidenceIds": ["review-current-implementation", "central-contract"],
+        "impact": "A malformed optional source_proposed_values value throws during listTransactions and can hide otherwise valid local records behind the app-level load error.",
+        "recommendation": "Parse and validate the fixed speech proposal shape defensively; omit invalid optional source context while preserving the confirmed transaction."
+      }
+    ],
+    "coverage": [
+      { "area": "observable behavior, regression, edge cases, and tests", "status": "reviewed", "evidenceIds": ["review-current-implementation", "current-profile-checks"] },
+      { "area": "data integrity, persistence, error handling, and recovery", "status": "reviewed", "evidenceIds": ["review-current-implementation", "central-contract"] },
+      { "area": "security, privacy, authorization, external services, and untrusted input", "status": "reviewed", "evidenceIds": ["review-current-implementation", "current-profile-checks"] },
+      { "area": "dependency, supply chain, attribution, portability, and configuration", "status": "reviewed", "evidenceIds": ["review-current-implementation", "current-profile-checks"] },
+      { "area": "native accessibility, layout, and interaction", "status": "reviewed", "evidenceIds": ["review-current-implementation", "central-contract"] }
+    ],
+    "evidenceGaps": [
+      { "id": "gap-device-acceptance", "subject": "physical Android TTS, enlarged-text, and installability", "reason": "Requires the separate EAS gate and assigned device execution; local review cannot substitute for it." }
+    ],
+    "scopeSummary": "Reviewed every current change-owned application, test, dependency, planning, and evidence path against the central contract and prototype profile; four bounded objective defects require correction before local readiness."
+  }
+}
