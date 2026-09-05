@@ -707,7 +707,7 @@ function BrandHeader({
       <View style={styles.headerRight}>
         <Text style={styles.savedStatus}>✓ {text(locale, 'savedOnPhone')}</Text>
         <View style={styles.localeRow}>
-          {(['en', 'fr'] as AppLocale[]).map((candidate) => (
+          {(['en', 'fr', 'ht'] as AppLocale[]).map((candidate) => (
             <Pressable
               key={candidate}
               accessibilityRole="button"
@@ -723,7 +723,7 @@ function BrandHeader({
                   locale === candidate && styles.localeTextSelected,
                 ]}
               >
-                {candidate === 'en' ? 'EN' : 'FR'}
+                {candidate.toUpperCase()}
               </Text>
             </Pressable>
           ))}

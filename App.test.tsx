@@ -207,6 +207,21 @@ describe('Home-first manual entry flow', () => {
     expect(mockRunAsync).not.toHaveBeenCalled();
   });
 
+  it('uses Haitian Creole resources and Haitian amount formatting', async () => {
+    const rendered = await render(<AppView ttsAdapter={mockTtsAdapter} />);
+    const user = userEvent.setup();
+
+    await user.press(await rendered.findByText('HT'));
+
+    expect(
+      await rendered.findByRole('button', { name: 'Anrejistre yon vant' }),
+    ).toBeTruthy();
+    expect(
+      rendered.getByRole('button', { name: 'Anrejistre yon depans' }),
+    ).toBeTruthy();
+    expect(rendered.getByText('Semèn sa a')).toBeTruthy();
+  });
+
   it('uses visible and named French speech controls', async () => {
     const rendered = await render(<AppView ttsAdapter={mockTtsAdapter} />);
     const user = userEvent.setup();

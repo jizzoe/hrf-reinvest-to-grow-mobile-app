@@ -1,5 +1,17 @@
 import * as Speech from 'expo-speech';
 
+/**
+ * Explicit speech language per interface language. Haitian Creole has no
+ * widely available device voice, so it maps to Haitian French; when no voice
+ * exists the adapter's existing unavailable path keeps on-screen review and
+ * confirmation usable.
+ */
+const SPEECH_LANGUAGE: Record<AppLocale, string> = {
+  en: 'en-US',
+  fr: 'fr-FR',
+  ht: 'fr-HT',
+};
+
 import type { AppLocale } from '../domain/types';
 
 export type TtsCallbacks = {
@@ -22,7 +34,7 @@ export function createDeviceTtsAdapter(
     speak(summary, locale, callbacks) {
       try {
         nativeSpeech.speak(summary, {
-          language: locale === 'fr' ? 'fr-FR' : 'en-US',
+          language: SPEECH_LANGUAGE[locale],
           onDone: callbacks.onDone,
           onError: callbacks.onError,
           onStart: callbacks.onStart,
