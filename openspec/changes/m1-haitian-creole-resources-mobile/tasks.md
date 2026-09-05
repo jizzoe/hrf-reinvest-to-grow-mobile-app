@@ -36,9 +36,9 @@ dropped.
 - [x] 4.1 Produce `docs/translation-review/ht-review-2026-09.md` listing every
   key with its English source and Haitian Creole value, plus the receipt
   keyword lists, in a form a non-developer reviewer can correct.
-- [ ] 4.2 Run and record repository checks: formatting, type safety, full Jest
+- [x] 4.2 Run and record repository checks: formatting, type safety, full Jest
   suite, key parity, unchanged English and French output, Haitian Creole
   formatting, no-network behaviour, dependency audit, and secret patterns.
-- [ ] 4.3 Produce component verification mapping every requirement, scenario,
+- [x] 4.3 Produce component verification mapping every requirement, scenario,
   task, and residual gap, and present it for explicit Gate 2 acceptance before
   Sync or Archive. Record the unreviewed-translation residual gap explicitly.
