@@ -25,7 +25,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "format:check": "prettier --check App.tsx App.test.tsx index.ts src app.json eas.json package.json tsconfig.json .prettierrc.json docs/brand-assets.md docs/dependency-evidence/m1-manual-offline-mobile.md docs/dependency-evidence/m1-speech-proposal-mobile.md docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md",
+    "format:check": "prettier --check App.tsx App.test.tsx index.ts src app.json eas.json package.json tsconfig.json .prettierrc.json docs/brand-assets.md docs/dependency-evidence/m1-manual-offline-mobile.md docs/dependency-evidence/m1-speech-proposal-mobile.md docs/implementation-evidence/m1-speech-proposal-mobile-local-checks.md docs/translation-review/ht-review-2026-09.md docs/implementation-evidence/m1-haitian-creole-resources-verification.md",
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand",
     "check": "npm run format:check && npm run typecheck && npm run test",

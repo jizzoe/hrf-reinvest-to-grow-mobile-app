@@ -1,4 +1,4 @@
-export type AppLocale = 'en' | 'fr';
+export type AppLocale = 'en' | 'fr' | 'ht';
 
 export type TransactionType = 'sale' | 'expense';
 
